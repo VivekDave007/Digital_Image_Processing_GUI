@@ -1,9 +1,16 @@
 import streamlit as st
-import numpy as np
-import cv2
-import matplotlib.pyplot as plt
 import time
-from scipy.spatial import distance
+
+try:
+    import numpy as np
+    import cv2
+    import matplotlib.pyplot as plt
+    from scipy.spatial import distance
+except ImportError as e:
+    st.error(f"Critical Dependency Error: {e}")
+    st.info("Attempting to run with limited functionality...")
+    # Minimal fallback or stop
+    st.stop()
 
 # Set Page Config
 st.set_page_config(
