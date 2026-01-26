@@ -1,7 +1,6 @@
-streamlit==1.30.0
-numpy==1.26.2
-opencv-python-headless==4.8.1.78
-matplotlib==3.8.2
-scipy==1.11.4
+streamlit
+numpy
+opencv-python-headless
+matplotlib
+scipy
 altair<5
-watchdog==3.0.0
