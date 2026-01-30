@@ -160,7 +160,7 @@ elif module == "2. EM Spectrum":
             st.info("Band: **Ultraviolet**")
             st.markdown("☀️ Causes sunburn & fluorescence.")
         elif log_freq < 20:
-            st.primary("Band: **X-Rays**")
+            st.info("Band: **X-Rays**")
             st.image("https://upload.wikimedia.org/wikipedia/commons/b/b3/X-ray_of_hand.jpg", caption="Medical Imaging")
         else:
             st.error("Band: **Gamma Rays**")
