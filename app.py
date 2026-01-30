@@ -85,7 +85,7 @@ module = st.sidebar.radio("Select Module", [
 ])
 
 st.sidebar.divider()
-st.sidebar.info("Developed by Project Agent. \nDeployment Ready.")
+st.sidebar.info("Developed by Vivek Dave. \nDeployment Ready.")
 
 # --- Main Content ---
 st.title("Interactive Digital Image Processing")
@@ -151,7 +151,12 @@ elif module == "2. EM Spectrum":
             st.info("📶 Used for Radar & WiFi.")
         elif log_freq < 14.5:
             st.warning("Band: **Infrared**")
-            st.image("https://upload.wikimedia.org/wikipedia/commons/9/92/Infrared_dog.jpg", caption="Thermal Imaging")
+            # Generate Synthetic Thermal Image
+            thermal = np.zeros((300, 300), dtype=np.uint8)
+            cv2.circle(thermal, (150, 150), 80, 255, -1) # Hot object
+            thermal = cv2.GaussianBlur(thermal, (51, 51), 0)
+            thermal_color = cv2.applyColorMap(thermal, cv2.COLORMAP_JET)
+            st.image(thermal_color, channels="BGR", caption="Simulated Thermal Imaging", use_container_width=True)
         elif log_freq < 15.0:
             st.error("Band: **Visible Light**")
             st.markdown("🌈 **The Human Visual Window**")
@@ -161,7 +166,13 @@ elif module == "2. EM Spectrum":
             st.markdown("☀️ Causes sunburn & fluorescence.")
         elif log_freq < 20:
             st.info("Band: **X-Rays**")
-            st.image("https://upload.wikimedia.org/wikipedia/commons/b/b3/X-ray_of_hand.jpg", caption="Medical Imaging")
+             # Generate Synthetic X-Ray (Inverted Bone-like structure)
+            xray = np.zeros((300, 300), dtype=np.uint8)
+            cv2.line(xray, (100, 50), (100, 250), 200, 40) # Bone 1
+            cv2.line(xray, (200, 50), (200, 250), 200, 40) # Bone 2
+            xray = cv2.GaussianBlur(xray, (15, 15), 0)
+            xray = 255 - xray # Invert for X-Ray look
+            st.image(xray, caption="Simulated Medical Imaging (Bones)", use_container_width=True)
         else:
             st.error("Band: **Gamma Rays**")
             st.markdown("☢️ Nuclear radiation.")
