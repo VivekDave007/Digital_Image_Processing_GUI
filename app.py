@@ -177,22 +177,50 @@ elif module == "3. Acquisition":
     with tab1:
         st.write("**Single Sensor (e.g. Laser Drum Scanner)**: Moves pixel by pixel.")
         if st.button("Simulate Single Capture"):
-            progress = st.progress(0)
-            status = st.empty()
-            for i in range(100):
-                time.sleep(0.01) # 1 sec total
-                progress.progress(i + 1)
-                status.text(f"Scanning pixel {i}/100...")
-            st.success("Image Captured Row-by-Row, Pixel-by-Pixel!")
+            # Create a placeholder for the image
+            image_placeholder = st.empty()
+            status_text = st.empty()
+            
+            # Create a dummy image (grayscale gradient)
+            GRID_SIZE = 20
+            img = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
+            
+            # Animate pixel by pixel 
+            # (We skip some frames for speed, otherwise 400 updates is too slow for Streamlit)
+            for y in range(GRID_SIZE):
+                for x in range(GRID_SIZE):
+                    # Fill pixel with a pattern
+                    img[y, x] = int((x+y) * 255 / (GRID_SIZE*2))
+                    
+                    # Update UI every row (to be faster)
+                if y % 2 == 0:
+                     # Scale up for visibility
+                     big_img = cv2.resize(img, (300, 300), interpolation=cv2.INTER_NEAREST)
+                     image_placeholder.image(big_img, caption=f"Scanning Row {y+1}/{GRID_SIZE}...", use_container_width=False, clamp=True)
+                     time.sleep(0.05)
+            
+            # Final Show
+            big_img = cv2.resize(img, (300, 300), interpolation=cv2.INTER_NEAREST)
+            image_placeholder.image(big_img, caption="Capture Complete", use_container_width=False, clamp=True)
+            status_text.success("Image Captured Row-by-Row, Pixel-by-Pixel!")
             
     with tab2:
         st.write("**Sensor Strip (e.g. Flatbed Scanner)**: Moves row by row.")
         if st.button("Simulate Strip Capture"):
-            progress = st.progress(0)
-            for i in range(10):
-                time.sleep(0.1) 
-                progress.progress((i + 1) * 10)
-            st.success("Image Captured Row-by-Row!")
+            image_placeholder = st.empty()
+            GRID_SIZE = 20
+            img = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
+            
+            for y in range(GRID_SIZE):
+                # Fill entire row
+                for x in range(GRID_SIZE):
+                    img[y, x] = int((x+y) * 255 / (GRID_SIZE*2))
+                
+                big_img = cv2.resize(img, (300, 300), interpolation=cv2.INTER_NEAREST)
+                image_placeholder.image(big_img, caption=f"Scanning Row {y+1}/{GRID_SIZE}...", use_container_width=False, clamp=True)
+                time.sleep(0.1)
+                
+            status_text = st.success("Image Captured Row-by-Row!")
 
     with tab3:
         st.write("**Sensor Array (e.g. Digital Camera)**: Captures instantly.")
