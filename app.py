@@ -16,6 +16,8 @@ st.set_page_config(
 # --- CSS Styling ---
 # --- CSS Styling ---
 # --- CSS Styling ---
+# --- CSS Styling ---
+# --- CSS Styling ---
 st.markdown("""
 <style>
     /* Import Google Font 'Inter' */
@@ -32,28 +34,23 @@ st.markdown("""
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
     }
-    
-    @keyframes cardHover {
-        0% { transform: translateY(0); }
-        100% { transform: translateY(-5px); }
-    }
 
-    /* --- GLOBAL STYLES --- */
+    /* --- ADAPTIVE GLOBAL STYLES (Uses Theme Variables) --- */
     html, body, [class*="css"]  {
         font-family: 'Inter', sans-serif;
-        color: #FAFAFA;
+        color: var(--text-color);
         scroll-behavior: smooth;
     }
     
-    /* Global Fade In Effect for the whole app */
     .stApp {
-        background-color: #0E1117;
+        background-color: var(--background-color);
         animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
     
-    /* --- ANIMATED HEADERS --- */
+    /* --- HEADERS --- */
     h1 {
-        background: linear-gradient(-45deg, #00ADB5, #00FFF5, #2396ef, #00ADB5);
+        /* Adaptive Gradient: Uses Primary Color mixed with text color for contrast */
+        background: linear-gradient(-45deg, var(--primary-color), #2396ef, var(--text-color));
         background-size: 300%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -61,89 +58,75 @@ st.markdown("""
         font-size: 3.5rem !important;
         padding-bottom: 0.5rem;
         animation: gradientFlow 5s ease infinite;
-        text-shadow: 0 0 30px rgba(0, 173, 181, 0.3);
     }
     
-    h2 {
-        color: #EEEEEE;
-        border-bottom: 2px solid #00ADB5;
-        padding-bottom: 10px;
-        font-weight: 600;
-        margin-top: 2rem;
-        transition: color 0.3s;
-    }
-    
-    h2:hover {
-        color: #00ADB5;
+    h2, h3 {
+        color: var(--text-color) !important;
+        border-bottom: 2px solid var(--primary-color);
     }
     
     /* --- SIDEBAR --- */
     section[data-testid="stSidebar"] {
-        background-color: #161920;
-        border-right: 1px solid #262730;
-        box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+        background-color: var(--secondary-background-color);
+        border-right: 1px solid rgba(128, 128, 128, 0.2);
     }
     
-    /* --- INTERACTIVE IMAGES --- */
-    img {
-        border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy effect */
+    /* Sidebar Title */
+    section[data-testid="stSidebar"] h1 {
+        font-size: 2.0rem !important;
+        text-align: left !important;
+        background: none !important;
+        -webkit-text-fill-color: var(--primary-color) !important;
+        color: var(--primary-color) !important;
+        margin-bottom: 0;
+        padding-left: 0.2rem;
     }
     
-    img:hover {
-        transform: scale(1.02) translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0, 173, 181, 0.25);
-        border: 1px solid rgba(0, 255, 245, 0.3);
+    /* --- WIDGETS & INPUTS --- */
+    /* Let Streamlit handle input backgrounds natively (best for light/dark switching) */
+    .stTextInput > div > div > input, .stSelectbox > div > div > div {
+        border-radius: 8px; 
     }
     
-    /* --- GLOWING BUTTONS --- */
+    /* --- BUTTONS --- */
     .stButton > button {
-        background: linear-gradient(135deg, #262730 0%, #1e2025 100%);
-        color: #00ADB5;
-        border: 1px solid rgba(0, 173, 181, 0.3);
+        background: linear-gradient(135deg, var(--secondary-background-color) 0%, var(--background-color) 100%);
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
         border-radius: 8px;
         transition: all 0.3s ease;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
     }
     
     .stButton > button:hover {
-        background: linear-gradient(135deg, #00ADB5 0%, #00FFF5 100%);
-        color: #121212;
-        border-color: #00FFF5;
-        box-shadow: 0 0 20px rgba(0, 173, 181, 0.6);
+        background: var(--primary-color);
+        color: var(--background-color); /* Invert on hover */
+        box-shadow: 0 0 15px rgba(0, 173, 181, 0.4);
         transform: translateY(-2px);
     }
     
-    .stButton > button:active {
-        transform: scale(0.95);
+    /* --- IMAGES --- */
+    img {
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
+    }
+    img:hover {
+        transform: scale(1.02);
+    }
+    
+    /* --- ALERTS & EXPANDERS --- */
+    .stAlert {
+        background-color: var(--secondary-background-color);
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .streamlit-expanderHeader {
+        background-color: var(--secondary-background-color);
+        color: var(--text-color) !important;
+        border-radius: 6px;
     }
 
-    /* --- EXPANDERS & ALERTS --- */
-    .streamlit-expanderHeader {
-        background-color: #1E212B;
-        border-radius: 8px;
-        border: 1px solid #262730;
-        transition: all 0.3s;
-    }
-    .streamlit-expanderHeader:hover {
-        border-color: #00ADB5;
-        background-color: #262730;
-    }
-    
-    .stAlert {
-        background-color: rgba(30, 33, 43, 0.9);
-        border-left: 4px solid #00ADB5;
-        backdrop-filter: blur(10px);
-        animation: fadeInUp 0.5s ease-out;
-    }
-    
-    /* Metrics Animation */
-    div[data-testid="stMetricValue"] {
-        animation: fadeInUp 0.8s ease-out;
-    }
 </style>
 """, unsafe_allow_html=True)
 
