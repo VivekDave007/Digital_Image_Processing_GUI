@@ -14,18 +14,42 @@ st.set_page_config(
 )
 
 # --- CSS Styling ---
+# --- CSS Styling ---
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+    
+    html, body, [class*="css"]  {
+        font-family: 'Inter', sans-serif;
+    }
+    
     .reportview-container {
         background: #0e1117;
     }
+    
     .sidebar .sidebar-content {
         background: #262730;
     }
-    h1 { color: #00ADB5; }
-    h2 { color: #EEEEEE; }
-    h3 { color: #00ADB5; }
+    
+    h1 {
+        background: -webkit-linear-gradient(45deg, #00ADB5, #393E46);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700 !important;
+    }
+    
+    h2 { color: #EEEEEE; border-bottom: 2px solid #00ADB5; padding-bottom: 10px; }
+    h3 { color: #00ADB5; font-weight: 600; }
+    
     .stSlider > div > div > div > div { background-color: #00ADB5; }
+    
+    /* Card-like info box */
+    .stAlert {
+        background-color: #262730;
+        border: 1px solid #00ADB5;
+        color: #EEEEEE;
+        border-radius: 8px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -147,7 +171,7 @@ def apply_frequency_filter(img, filter_type, cutoff, order, pad_image=True):
     if pad_image:
         img_back = img_back[:rows, :cols]
         
-    return img_back, mask, fshift
+    return img_back, mask, fshift_filtered
 
 # --- Spatial Filtering Helpers ---
 def add_noise(img, noise_type, param1=0, param2=0):
@@ -515,6 +539,20 @@ elif category == "2. Advanced Processing":
         
         if module == "2.1 Frequency Domain":
             st.header("Frequency Domain Filtering")
+            with st.expander("📘 Theory: Frequency Domain & FFT"):
+                st.write("""
+                **Concept**: Converts the image from spatial domain $(x,y)$ to frequency domain $(u,v)$.
+                - **Low Frequencies**: Provide image structure (smooth regions).
+                - **High Frequencies**: Provide edges and details.
+                
+                **Math**:
+                $F(u,v) = \sum_{x=0}^{M-1} \sum_{y=0}^{N-1} f(x,y) e^{-j 2\pi (ux/M + vy/N)}$
+                
+                **Filters**:
+                - **Ideal**: Sharp cutoff (Causes ringing/Gibbs phenomenon).
+                - **Butterworth**: Smooth transition (Order $n$ controls sharpness).
+                - **Gaussian**: No ringing (Fourier transform of Gaussian is Gaussian).
+                """)
             
             filter_type = st.sidebar.selectbox("Filter Type", 
                                                ["Ideal Lowpass", "Ideal Highpass", 
@@ -530,21 +568,38 @@ elif category == "2. Advanced Processing":
             pad_choice = st.sidebar.checkbox("Use Padding (Avoid Wraparound)", value=True)
             
             # Visualization of Spectrum
-            st.subheader("Frequency Spectrum")
+            st.subheader("Frequency Spectrum Analysis")
+            col_spec1, col_spec2, col_spec3 = st.columns(3)
+            
+            # 1. Original Spectrum
             _, mag_spec = get_spectrum(original_img)
-            st.image(mag_spec / np.max(mag_spec), caption="Magnitude Spectrum (Log Transformed)", clamp=True, use_container_width=True)
+            col_spec1.image(mag_spec / np.max(mag_spec), caption="Original Spectrum", clamp=True, use_container_width=True)
             
             # Processing
-            processed_img, mask, _ = apply_frequency_filter(original_img, filter_type, cutoff, order, pad_choice)
+            processed_img, mask, fshift_filtered = apply_frequency_filter(original_img, filter_type, cutoff, order, pad_choice)
             
-            st.subheader("Filter Mask")
-            st.image(mask, caption="Filter Frequency Response", clamp=True, use_container_width=True)
+            # 2. Filter Mask
+            col_spec2.image(mask, caption="Filter Mask", clamp=True, use_container_width=True)
             
-            st.subheader("Result")
+            # 3. Filtered Spectrum
+            mag_spec_filtered = 20 * np.log(1 + np.abs(fshift_filtered))
+            col_spec3.image(mag_spec_filtered / np.max(mag_spec), caption="Filtered Spectrum", clamp=True, use_container_width=True)
+            
+            st.subheader("Spatial Result")
             display_images(original_img, processed_img)
             
         elif module == "2.2 Spatial Filtering":
             st.header("Spatial Filtering")
+            with st.expander("📘 Theory: Spatial Convoution & Noise"):
+                st.write("""
+                **Convolution**:
+                $g(x,y) = w(x,y) * f(x,y) = \sum_{s=-a}^{a} \sum_{t=-b}^{b} w(s,t) f(x-s, y-t)$
+                *Note: The kernel $w$ requires flipping by 180 degrees.*
+                
+                **Filters**:
+                - **Gaussian Blur**: Weighted average (Standard deviation $\sigma$).
+                - **Median Filter**: Replaces pixel with median of neighbors. (Best for Salt & Pepper noise).
+                """)
             
             action = st.sidebar.radio("Action", ["Add Noise", "Apply Filter"])
             
@@ -581,6 +636,14 @@ elif category == "2. Advanced Processing":
 
         elif module == "2.3 Morphology":
             st.header("Morphological Operations")
+            with st.expander("📘 Theory: Morphology"):
+                st.write("""
+                **Operations based on shapes (Structuring Elements)**.
+                - **Erosion**: Shrinks bright regions (removes small anomalies).
+                - **Dilation**: Expands bright regions (fills gaps).
+                - **Opening**: Erosion followed by Dilation (Removes noise).
+                - **Closing**: Dilation followed by Erosion (Fills holes).
+                """)
             
             op_type = st.sidebar.selectbox("Operation", ["Erosion", "Dilation", "Opening", "Closing"])
             shape_txt = st.sidebar.selectbox("Structuring Element Shape", ["Rect", "Cross", "Ellipse"])
@@ -588,6 +651,18 @@ elif category == "2. Advanced Processing":
             
             processed_img = apply_morphology(original_img, op_type, shape_txt, k_size)
             display_images(original_img, processed_img)
+            
+        # --- Download Section ---
+        st.divider()
+        if 'processed_img' in locals():
+            is_success, buffer = cv2.imencode(".png", processed_img)
+            if is_success:
+                 st.download_button(
+                    label="⬇️ Download Processed Image",
+                    data=buffer.tobytes(),
+                    file_name="processed_image.png",
+                    mime="image/png"
+                 )
             
     else:
         st.info("Please upload an image to use the Advanced Processing modules.")
