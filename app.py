@@ -1,20 +1,13 @@
 import streamlit as st
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+from scipy import fftpack
 import time
 
-try:
-    import numpy as np
-    import cv2
-    import matplotlib.pyplot as plt
-    from scipy.spatial import distance
-except ImportError as e:
-    st.error(f"Critical Dependency Error: {e}")
-    st.info("Attempting to run with limited functionality...")
-    # Minimal fallback or stop
-    st.stop()
-
-# Set Page Config
+# --- Configuration ---
 st.set_page_config(
-    page_title="Digital Image Processing - Ch2",
+    page_title="DIP Workbench Ultimate",
     page_icon="👁️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -36,7 +29,23 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- Helper Functions ---
+st.title("Digital Image Processing Workbench")
+
+# --- Utils ---
+@st.cache_data
+def load_image(file):
+    file_bytes = np.asarray(bytearray(file.read()), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
+    return img
+
+def display_images(original, processed, titles=("Original Image", "Processed Image")):
+    col1, col2 = st.columns(2)
+    with col1:
+        st.image(original, caption=titles[0], use_container_width=True, clamp=True, channels='GRAY')
+    with col2:
+        st.image(processed, caption=titles[1], use_container_width=True, clamp=True, channels='GRAY')
+
+# --- Helper Functions (Fundamentals) ---
 def generate_flower_scene(illumination, mach_bands):
     """Generates the Module 1 Scene using OpenCV"""
     w, h = 400, 300
@@ -72,28 +81,180 @@ def generate_flower_scene(illumination, mach_bands):
         
         return img
 
+# --- Frequency Domain Helpers ---
+def get_spectrum(img):
+    f = np.fft.fft2(img)
+    fshift = np.fft.fftshift(f)
+    # Log transformation for visualization: s = c * log(1 + r)
+    magnitude_spectrum = 20 * np.log(1 + np.abs(fshift))
+    return fshift, magnitude_spectrum
+
+def create_filter(shape, filter_type, cutoff, order=1):
+    rows, cols = shape
+    crow, ccol = rows // 2, cols // 2
+    
+    u = np.arange(rows)
+    v = np.arange(cols)
+    u, v = np.meshgrid(u, v, indexing='ij')
+    d_uv = np.sqrt((u - crow)**2 + (v - ccol)**2)
+    
+    mask = np.zeros((rows, cols), dtype=np.float32)
+
+    if filter_type == "Ideal Lowpass":
+        mask[d_uv <= cutoff] = 1
+    elif filter_type == "Ideal Highpass":
+        mask[d_uv > cutoff] = 1
+    elif filter_type == "Gaussian Lowpass":
+        mask = np.exp(-(d_uv**2) / (2 * (cutoff**2)))
+    elif filter_type == "Gaussian Highpass":
+        mask = 1 - np.exp(-(d_uv**2) / (2 * (cutoff**2)))
+    elif filter_type == "Butterworth Lowpass":
+        mask = 1 / (1 + (d_uv / cutoff)**(2 * order))
+    elif filter_type == "Butterworth Highpass":
+        mask = 1 - (1 / (1 + (d_uv / cutoff)**(2 * order)))
+        
+    return mask
+
+@st.cache_data
+def apply_frequency_filter(img, filter_type, cutoff, order, pad_image=True):
+    rows, cols = img.shape
+    
+    # Padding to avoid wraparound errors (Pad to double size)
+    if pad_image:
+        padded_rows, padded_cols = 2 * rows, 2 * cols
+        padded_img = np.zeros((padded_rows, padded_cols), dtype=img.dtype)
+        padded_img[:rows, :cols] = img
+    else:
+        padded_rows, padded_cols = rows, cols
+        padded_img = img
+
+    # FFT
+    f = np.fft.fft2(padded_img)
+    fshift = np.fft.fftshift(f)
+    
+    # Create Filter
+    mask = create_filter((padded_rows, padded_cols), filter_type, cutoff, order)
+    
+    # Apply Filter
+    fshift_filtered = fshift * mask
+    
+    # Inverse FFT
+    f_ishift = np.fft.ifftshift(fshift_filtered)
+    img_back = np.fft.ifft2(f_ishift)
+    img_back = np.abs(img_back)
+    
+    # Crop back if padded
+    if pad_image:
+        img_back = img_back[:rows, :cols]
+        
+    return img_back, mask, fshift
+
+# --- Spatial Filtering Helpers ---
+def add_noise(img, noise_type, param1=0, param2=0):
+    noisy_img = img.copy()
+    if noise_type == "Gaussian":
+        mean = param1
+        sigma = param2
+        gauss = np.random.normal(mean, sigma, img.shape).reshape(img.shape)
+        noisy_img = img + gauss
+        noisy_img = np.clip(noisy_img, 0, 255).astype(np.uint8)
+        
+    elif noise_type == "Salt & Pepper":
+        prob = param1
+        thres = 1 - prob
+        for i in range(img.shape[0]):
+            for j in range(img.shape[1]):
+                rdn = np.random.random()
+                if rdn < prob:
+                    noisy_img[i][j] = 0
+                elif rdn > thres:
+                    noisy_img[i][j] = 255
+
+    elif noise_type == "Periodic":
+        # Add sinusoidal noise
+        freq = param1
+        rows, cols = img.shape
+        x = np.arange(cols)
+        y = np.arange(rows)
+        X, Y = np.meshgrid(x, y)
+        sine_noise = param2 * np.sin(2 * np.pi * freq * X / cols) + param2 * np.sin(2 * np.pi * freq * Y / rows)
+        noisy_img = img + sine_noise
+        noisy_img = np.clip(noisy_img, 0, 255).astype(np.uint8)
+
+    return noisy_img
+
+@st.cache_data
+def apply_spatial_filter(img, filter_name, kernel_size, sigma_x=0):
+    if filter_name == "Gaussian Blur":
+        # In strict spatial filtering, Gaussian kernel is symmetric so flip doesn't change it,
+        # but conceptually we apply convolution.
+        return cv2.GaussianBlur(img, (kernel_size, kernel_size), sigma_x)
+    elif filter_name == "Median Filter":
+        return cv2.medianBlur(img, kernel_size)
+    elif filter_name == "Custom Convolution":
+        # Example of explicit convolution with flipping
+        # Let's create a simple averaging kernel for demo
+        kernel = np.ones((kernel_size, kernel_size), np.float32) / (kernel_size**2)
+        
+        # MATH CORRECTION: Flip the kernel 180 degrees for Convolution
+        kernel_flipped = cv2.flip(kernel, -1) 
+        
+        # cv2.filter2D performs Correlation. With flipped kernel, it becomes Convolution.
+        return cv2.filter2D(img, -1, kernel_flipped)
+    return img
+
+# --- Morphology Helpers ---
+@st.cache_data
+def apply_morphology(img, op_type, struct_elem_shape, kernel_size):
+    shape_dict = {
+        "Rect": cv2.MORPH_RECT,
+        "Cross": cv2.MORPH_CROSS,
+        "Ellipse": cv2.MORPH_ELLIPSE
+    }
+    shape = shape_dict[struct_elem_shape]
+    kernel = cv2.getStructuringElement(shape, (kernel_size, kernel_size))
+    
+    if op_type == "Erosion":
+        return cv2.erode(img, kernel, iterations=1)
+    elif op_type == "Dilation":
+        return cv2.dilate(img, kernel, iterations=1)
+    elif op_type == "Opening":
+        return cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+    elif op_type == "Closing":
+        return cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+    return img
+
+
 # --- Sidebar Navigation ---
-st.sidebar.title("DIP Fundamentals")
-st.sidebar.caption("Gonzalez & Woods, Chapter 2")
-module = st.sidebar.radio("Select Module", [
-    "1. Visual Perception", 
-    "2. EM Spectrum", 
-    "3. Acquisition", 
-    "4. Sampling", 
-    "5. Relationships", 
-    "6. Math Tools"
-])
+st.sidebar.title("DIP Workbench")
+st.sidebar.caption("Comprehensive Image Processing Suite")
+
+category = st.sidebar.radio("Select Category", ["1. Fundamentals", "2. Advanced Processing"])
+
+if category == "1. Fundamentals":
+    module = st.sidebar.selectbox("Select Module", [
+        "1.1 Visual Perception", 
+        "1.2 EM Spectrum", 
+        "1.3 Acquisition", 
+        "1.4 Sampling", 
+        "1.5 Relationships", 
+        "1.6 Math Tools"
+    ])
+else:
+    module = st.sidebar.selectbox("Select Module", [
+        "2.1 Frequency Domain", 
+        "2.2 Spatial Filtering", 
+        "2.3 Morphology"
+    ])
 
 st.sidebar.divider()
-st.sidebar.info("Developed by Vivek Dave. \nDeployment Ready.")
 
-# --- Main Content ---
-st.title("Interactive Digital Image Processing")
 
 # ==========================================
-# MODULE 1: VISUAL PERCEPTION
+# PART 1: FUNDAMENTALS (Logic from app (2).py)
 # ==========================================
-if module == "1. Visual Perception":
+
+if module == "1.1 Visual Perception":
     st.header("1. Elements of Visual Perception")
     st.write("Explore how the eye adapts to brightness (Scotopic vs Photopic) and visual illusions.")
 
@@ -119,10 +280,7 @@ if module == "1. Visual Perception":
             st.warning("Note the 'overshoot' brightness at the edges (Mach Band Effect).")
 
 
-# ==========================================
-# MODULE 2: EM SPECTRUM
-# ==========================================
-elif module == "2. EM Spectrum":
+elif module == "1.2 EM Spectrum":
     st.header("2. Light & The Electromagnetic Spectrum")
     
     # Log Freq: 6 (Radio) to 22 (Gamma)
@@ -166,10 +324,7 @@ elif module == "2. EM Spectrum":
             st.error("Band: **Gamma Rays**")
             st.markdown("☢️ Nuclear radiation.")
 
-# ==========================================
-# MODULE 3: ACQUISITION
-# ==========================================
-elif module == "3. Acquisition":
+elif module == "1.3 Acquisition":
     st.header("3. Image Sensing & Acquisition")
     
     tab1, tab2, tab3 = st.tabs(["Single Sensor", "Strip Sensor", "Array Sensor"])
@@ -230,10 +385,7 @@ elif module == "3. Acquisition":
             st.success("📸 SNAP! Instant Capture.")
 
 
-# ==========================================
-# MODULE 4: SAMPLING
-# ==========================================
-elif module == "4. Sampling":
+elif module == "1.4 Sampling":
     st.header("4. Sampling & Quantization")
     
     col_ctrl, col_img = st.columns([1, 2])
@@ -266,10 +418,7 @@ elif module == "4. Sampling":
         if k < 4: st.warning("Notice the 'False Contouring' bands in the gradient.")
 
 
-# ==========================================
-# MODULE 5: RELATIONSHIPS
-# ==========================================
-elif module == "5. Relationships":
+elif module == "1.5 Relationships":
     st.header("5. Pixel Relationships")
     
     col1, col2 = st.columns([1, 3])
@@ -309,10 +458,7 @@ elif module == "5. Relationships":
         st.caption("Distance Map from P (Red Box). Values show distance $D(p, q)$.")
 
 
-# ==========================================
-# MODULE 6: MATH TOOLS
-# ==========================================
-elif module == "6. Math Tools":
+elif module == "1.6 Math Tools":
     st.header("6. Mathematical Tools")
     
     op = st.selectbox("Operation", ["Addition (Noise Reduction)", "Subtraction (Motion Detection)", "Multiplication (ROI Masking)"])
@@ -356,3 +502,94 @@ elif module == "6. Math Tools":
             mask = (img_b > 0).astype(np.float32)
             res = (img_a.astype(np.float32) * mask).astype(np.uint8)
             st.image(res, caption="Result (Masked)", use_container_width=True)
+
+
+# ==========================================
+# PART 2: ADVANCED PROCESSING (Logic from app.py - Workbench)
+# ==========================================
+elif category == "2. Advanced Processing":
+    uploaded_file = st.sidebar.file_uploader("Upload an Image", type=["jpg", "png", "jpeg", "bmp", "tif"])
+
+    if uploaded_file:
+        original_img = load_image(uploaded_file)
+        
+        if module == "2.1 Frequency Domain":
+            st.header("Frequency Domain Filtering")
+            
+            filter_type = st.sidebar.selectbox("Filter Type", 
+                                               ["Ideal Lowpass", "Ideal Highpass", 
+                                                "Gaussian Lowpass", "Gaussian Highpass", 
+                                                "Butterworth Lowpass", "Butterworth Highpass"])
+            
+            cutoff = st.sidebar.slider("Cutoff Frequency (D0)", 10, 200, 50)
+            
+            order = 1
+            if "Butterworth" in filter_type:
+                order = st.sidebar.slider("Butterworth Order (n)", 1, 10, 2)
+                
+            pad_choice = st.sidebar.checkbox("Use Padding (Avoid Wraparound)", value=True)
+            
+            # Visualization of Spectrum
+            st.subheader("Frequency Spectrum")
+            _, mag_spec = get_spectrum(original_img)
+            st.image(mag_spec / np.max(mag_spec), caption="Magnitude Spectrum (Log Transformed)", clamp=True, use_container_width=True)
+            
+            # Processing
+            processed_img, mask, _ = apply_frequency_filter(original_img, filter_type, cutoff, order, pad_choice)
+            
+            st.subheader("Filter Mask")
+            st.image(mask, caption="Filter Frequency Response", clamp=True, use_container_width=True)
+            
+            st.subheader("Result")
+            display_images(original_img, processed_img)
+            
+        elif module == "2.2 Spatial Filtering":
+            st.header("Spatial Filtering")
+            
+            action = st.sidebar.radio("Action", ["Add Noise", "Apply Filter"])
+            
+            if action == "Add Noise":
+                noise_type = st.sidebar.selectbox("Noise Type", ["Gaussian", "Salt & Pepper", "Periodic"])
+                param1, param2 = 0.0, 0.0
+                
+                if noise_type == "Gaussian":
+                    param1 = st.sidebar.slider("Mean", -50.0, 50.0, 0.0)
+                    param2 = st.sidebar.slider("Sigma", 0.0, 100.0, 25.0)
+                elif noise_type == "Salt & Pepper":
+                    param1 = st.sidebar.slider("Probability", 0.0, 1.0, 0.05)
+                elif noise_type == "Periodic":
+                    param1 = st.sidebar.slider("Frequency", 1.0, 100.0, 20.0)
+                    param2 = st.sidebar.slider("Amplitude", 0.0, 100.0, 30.0)
+                    
+                processed_img = add_noise(original_img, noise_type, param1, param2)
+                display_images(original_img, processed_img, ("Original", f"Noisy ({noise_type})"))
+                
+            else:
+                filter_name = st.sidebar.selectbox("Filter", ["Gaussian Blur", "Median Filter", "Custom Convolution"])
+                k_size = st.sidebar.slider("Kernel Size", 1, 31, 5, step=2)
+                
+                sigma = 0
+                if filter_name == "Gaussian Blur":
+                    sigma = st.sidebar.slider("Sigma X", 0.1, 10.0, 1.0)
+                    
+                processed_img = apply_spatial_filter(original_img, filter_name, k_size, sigma)
+                
+                if filter_name == "Custom Convolution":
+                     st.info("Note: Kernel was FLIPPED 180 degrees to perform true Convolution.")
+                     
+                display_images(original_img, processed_img)
+
+        elif module == "2.3 Morphology":
+            st.header("Morphological Operations")
+            
+            op_type = st.sidebar.selectbox("Operation", ["Erosion", "Dilation", "Opening", "Closing"])
+            shape_txt = st.sidebar.selectbox("Structuring Element Shape", ["Rect", "Cross", "Ellipse"])
+            k_size = st.sidebar.slider("Structuring Element Size", 1, 31, 5, step=2) # Must be odd for stability usually, but cv2 ok
+            
+            processed_img = apply_morphology(original_img, op_type, shape_txt, k_size)
+            display_images(original_img, processed_img)
+            
+    else:
+        st.info("Please upload an image to use the Advanced Processing modules.")
+
+st.sidebar.info("Developed by Vivek Dave. ")

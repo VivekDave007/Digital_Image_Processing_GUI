@@ -1,6 +1,5 @@
 streamlit
-numpy
 opencv-python-headless
+numpy
 matplotlib
 scipy
-altair<5
