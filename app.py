@@ -15,40 +15,134 @@ st.set_page_config(
 
 # --- CSS Styling ---
 # --- CSS Styling ---
+# --- CSS Styling ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+    /* Import Google Font 'Inter' */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
     
+    /* --- KEYFRAME ANIMATIONS --- */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translate3d(0, 20px, 0); }
+        to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    
+    @keyframes gradientFlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes cardHover {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-5px); }
+    }
+
+    /* --- GLOBAL STYLES --- */
     html, body, [class*="css"]  {
         font-family: 'Inter', sans-serif;
+        color: #FAFAFA;
+        scroll-behavior: smooth;
     }
     
-    .reportview-container {
-        background: #0e1117;
+    /* Global Fade In Effect for the whole app */
+    .stApp {
+        background-color: #0E1117;
+        animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
     
-    .sidebar .sidebar-content {
-        background: #262730;
-    }
-    
+    /* --- ANIMATED HEADERS --- */
     h1 {
-        background: -webkit-linear-gradient(45deg, #00ADB5, #393E46);
+        background: linear-gradient(-45deg, #00ADB5, #00FFF5, #2396ef, #00ADB5);
+        background-size: 300%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-weight: 700 !important;
+        font-weight: 800 !important;
+        font-size: 3.5rem !important;
+        padding-bottom: 0.5rem;
+        animation: gradientFlow 5s ease infinite;
+        text-shadow: 0 0 30px rgba(0, 173, 181, 0.3);
     }
     
-    h2 { color: #EEEEEE; border-bottom: 2px solid #00ADB5; padding-bottom: 10px; }
-    h3 { color: #00ADB5; font-weight: 600; }
-    
-    .stSlider > div > div > div > div { background-color: #00ADB5; }
-    
-    /* Card-like info box */
-    .stAlert {
-        background-color: #262730;
-        border: 1px solid #00ADB5;
+    h2 {
         color: #EEEEEE;
+        border-bottom: 2px solid #00ADB5;
+        padding-bottom: 10px;
+        font-weight: 600;
+        margin-top: 2rem;
+        transition: color 0.3s;
+    }
+    
+    h2:hover {
+        color: #00ADB5;
+    }
+    
+    /* --- SIDEBAR --- */
+    section[data-testid="stSidebar"] {
+        background-color: #161920;
+        border-right: 1px solid #262730;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+    }
+    
+    /* --- INTERACTIVE IMAGES --- */
+    img {
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy effect */
+    }
+    
+    img:hover {
+        transform: scale(1.02) translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 173, 181, 0.25);
+        border: 1px solid rgba(0, 255, 245, 0.3);
+    }
+    
+    /* --- GLOWING BUTTONS --- */
+    .stButton > button {
+        background: linear-gradient(135deg, #262730 0%, #1e2025 100%);
+        color: #00ADB5;
+        border: 1px solid rgba(0, 173, 181, 0.3);
         border-radius: 8px;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #00ADB5 0%, #00FFF5 100%);
+        color: #121212;
+        border-color: #00FFF5;
+        box-shadow: 0 0 20px rgba(0, 173, 181, 0.6);
+        transform: translateY(-2px);
+    }
+    
+    .stButton > button:active {
+        transform: scale(0.95);
+    }
+
+    /* --- EXPANDERS & ALERTS --- */
+    .streamlit-expanderHeader {
+        background-color: #1E212B;
+        border-radius: 8px;
+        border: 1px solid #262730;
+        transition: all 0.3s;
+    }
+    .streamlit-expanderHeader:hover {
+        border-color: #00ADB5;
+        background-color: #262730;
+    }
+    
+    .stAlert {
+        background-color: rgba(30, 33, 43, 0.9);
+        border-left: 4px solid #00ADB5;
+        backdrop-filter: blur(10px);
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    /* Metrics Animation */
+    div[data-testid="stMetricValue"] {
+        animation: fadeInUp 0.8s ease-out;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -590,7 +684,7 @@ elif category == "2. Advanced Processing":
             
         elif module == "2.2 Spatial Filtering":
             st.header("Spatial Filtering")
-            with st.expander("📘 Theory: Spatial Convoution & Noise"):
+            with st.expander("📘 Theory: Spatial Convolution & Noise"):
                 st.write("""
                 **Convolution**:
                 $g(x,y) = w(x,y) * f(x,y) = \sum_{s=-a}^{a} \sum_{t=-b}^{b} w(s,t) f(x-s, y-t)$
