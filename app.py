@@ -49,15 +49,13 @@ st.markdown("""
     
     /* --- HEADERS --- */
     h1 {
-        /* Adaptive Gradient: Uses Primary Color mixed with text color for contrast */
-        background: linear-gradient(-45deg, var(--primary-color), #2396ef, var(--text-color));
-        background-size: 300%;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        /* Simplified for Reliability: Solid Color with Glow */
+        color: var(--primary-color) !important;
         font-weight: 800 !important;
         font-size: 3.5rem !important;
         padding-bottom: 0.5rem;
-        animation: gradientFlow 5s ease infinite;
+        /* Dynamic Shadow: Uses primary color for a subtle glow */
+        text-shadow: 0 0 20px rgba(128, 128, 128, 0.2);
     }
     
     h2, h3 {
