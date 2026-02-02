@@ -4,6 +4,13 @@ import cv2
 import matplotlib.pyplot as plt
 from scipy import fftpack
 import time
+from chapter2_experiments import (
+    image_statistics, 
+    pixel_relationships, 
+    connected_components, 
+    distance_measures, 
+    sampling_quantization_extended
+)
 
 # --- Configuration ---
 st.set_page_config(
@@ -65,8 +72,50 @@ st.markdown("""
     
     /* --- SIDEBAR --- */
     section[data-testid="stSidebar"] {
+        /* Default Desktop behavior using variables */
         background-color: var(--secondary-background-color);
         border-right: 1px solid rgba(128, 128, 128, 0.2);
+    }
+
+    /* Mobile-specific fix: ULTRA-AGGRESSIVE OPAQUE OVERRIDE */
+    @media (max-width: 768px) {
+        
+        /* Target the main container and ALL internal divs recursively */
+        section[data-testid="stSidebar"], 
+        section[data-testid="stSidebar"] div,
+        div[data-testid="stSidebarUserContent"],
+        div[data-testid="stSidebarNav"] {
+            /* Force the background to be the solid main theme color */
+            background-color: var(--background-color) !important;
+            
+            /* Remove any transparency layers or gradients */
+            background-image: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        /* Re-apply z-index and border only to the parent container */
+        section[data-testid="stSidebar"] {
+            border-right: 2px solid rgba(128, 128, 128, 0.2) !important;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2) !important;
+            opacity: 1 !important;
+            z-index: 999999 !important;
+        }
+        
+        /* Exceptions: Allow buttons/inputs to keep their specific styles, 
+           otherwise they become invisible rectangular blocks of color. */
+        section[data-testid="stSidebar"] button, 
+        section[data-testid="stSidebar"] input, 
+        section[data-testid="stSidebar"] [role="checkbox"],
+        section[data-testid="stSidebar"] .stSlider,
+        section[data-testid="stSidebar"] .stMarkdown, /* Text needs to be visible on top */
+        section[data-testid="stSidebar"] h1,
+        section[data-testid="stSidebar"] h2,
+        section[data-testid="stSidebar"] h3,
+        section[data-testid="stSidebar"] span,
+        section[data-testid="stSidebar"] label {
+             background-color: transparent !important; 
+        }
     }
     
     /* Sidebar Title */
@@ -335,9 +384,12 @@ if category == "1. Fundamentals":
         "1.1 Visual Perception", 
         "1.2 EM Spectrum", 
         "1.3 Acquisition", 
-        "1.4 Sampling", 
-        "1.5 Relationships", 
-        "1.6 Math Tools"
+        "1.4 Sampling & Quantization", 
+        "1.5 Pixel Connectivity", 
+        "1.6 Math Tools",
+        "1.7 Distance Measures",
+        "1.8 Connected Components",
+        "1.9 Image Statistics"
     ])
 else:
     module = st.sidebar.selectbox("Select Module", [
@@ -484,77 +536,15 @@ elif module == "1.3 Acquisition":
             st.success("📸 SNAP! Instant Capture.")
 
 
-elif module == "1.4 Sampling":
-    st.header("4. Sampling & Quantization")
-    
-    col_ctrl, col_img = st.columns([1, 2])
-    
-    with col_ctrl:
-        N = st.selectbox("Spatial Sampling (N)", [512, 256, 128, 64, 32, 16], index=0)
-        k = st.slider("Quantization Levels (k bits)", 1, 8, 8)
-        
-    with col_img:
-        # Generate Source
-        x = np.linspace(0, 1, 512)
-        xv, yv = np.meshgrid(x, x)
-        src = (xv * 255).astype(np.uint8) # Gradient
-        cv2.circle(src, (256, 256), 100, 255 if k>1 else 1, -1) # Inverted circle logic would need masking, keeping simple
-        if k > 1:
-             mask = ((xv-0.5)**2 + (yv-0.5)**2 < 0.3**2)
-             src[mask] = 255 - src[mask]
-        
-        # 1. Sampling (Resize Down -> Up)
-        small = cv2.resize(src, (N, N), interpolation=cv2.INTER_NEAREST)
-        resampled = cv2.resize(small, (512, 512), interpolation=cv2.INTER_NEAREST)
-        
-        # 2. Quantization
-        levels = 2 ** k
-        factor = 256 / levels
-        quantized = (np.floor(resampled / factor) * factor).astype(np.uint8)
-        
-        st.image(quantized, caption=f"Result: {N}x{N}, {k}-bit", use_container_width=True)
-        if N < 64: st.warning("Notice the 'Checkerboard' pixelation effect.")
-        if k < 4: st.warning("Notice the 'False Contouring' bands in the gradient.")
+elif module == "1.4 Sampling & Quantization":
+    sampling_quantization_extended.run()
 
 
-elif module == "1.5 Relationships":
-    st.header("5. Pixel Relationships")
-    
-    col1, col2 = st.columns([1, 3])
-    
-    with col1:
-        st.markdown("### Inputs")
-        p_x = st.number_input("Pixel P (x)", 0, 9, 4)
-        p_y = st.number_input("Pixel P (y)", 0, 9, 4)
-        
-        metric = st.selectbox("Distance Metric", ["Euclidean", "City-Block (D4)", "Chessboard (D8)"])
-        
-    with col2:
-        # Compute Distances for 10x10 grid
-        grid = np.zeros((10, 10))
-        for r in range(10):
-            for c in range(10):
-                if metric == "Euclidean":
-                    d = np.sqrt((r-p_y)**2 + (c-p_x)**2)
-                elif metric == "City-Block (D4)":
-                    d = abs(r-p_y) + abs(c-p_x)
-                else: # Chessboard
-                    d = max(abs(r-p_y), abs(c-p_x))
-                grid[r, c] = d
-                
-        fig, ax = plt.subplots()
-        im = ax.imshow(grid, cmap="viridis", origin='upper')
-        
-        # Annotate
-        for r in range(10):
-            for c in range(10):
-                ax.text(c, r, f"{grid[r,c]:.1f}", ha="center", va="center", color="w", fontsize=8)
-                
-        # Highlight Center
-        ax.add_patch(plt.Rectangle((p_x-0.5, p_y-0.5), 1, 1, fill=False, edgecolor='red', lw=3))
-        
-        st.pyplot(fig)
-        st.caption("Distance Map from P (Red Box). Values show distance $D(p, q)$.")
+elif module == "1.5 Pixel Connectivity":
+    pixel_relationships.run()
+    # Old 1.5 logic removed in favor of pixel_relationships.run() which is better.
+    # We kept the block structure to replacement work correctly.
+    pass
 
 
 elif module == "1.6 Math Tools":
@@ -603,6 +593,16 @@ elif module == "1.6 Math Tools":
             st.image(res, caption="Result (Masked)", use_container_width=True)
 
 
+elif module == "1.7 Distance Measures":
+    distance_measures.run()
+
+elif module == "1.8 Connected Components":
+    connected_components.run()
+
+elif module == "1.9 Image Statistics":
+    image_statistics.run()
+
+
 # ==========================================
 # PART 2: ADVANCED PROCESSING (Logic from app.py - Workbench)
 # ==========================================
@@ -615,7 +615,7 @@ elif category == "2. Advanced Processing":
         if module == "2.1 Frequency Domain":
             st.header("Frequency Domain Filtering")
             with st.expander("📘 Theory: Frequency Domain & FFT"):
-                st.write("""
+                st.write(r"""
                 **Concept**: Converts the image from spatial domain $(x,y)$ to frequency domain $(u,v)$.
                 - **Low Frequencies**: Provide image structure (smooth regions).
                 - **High Frequencies**: Provide edges and details.
@@ -666,7 +666,7 @@ elif category == "2. Advanced Processing":
         elif module == "2.2 Spatial Filtering":
             st.header("Spatial Filtering")
             with st.expander("📘 Theory: Spatial Convolution & Noise"):
-                st.write("""
+                st.write(r"""
                 **Convolution**:
                 $g(x,y) = w(x,y) * f(x,y) = \sum_{s=-a}^{a} \sum_{t=-b}^{b} w(s,t) f(x-s, y-t)$
                 *Note: The kernel $w$ requires flipping by 180 degrees.*
@@ -742,4 +742,7 @@ elif category == "2. Advanced Processing":
     else:
         st.info("Please upload an image to use the Advanced Processing modules.")
 
-st.sidebar.info("Developed by Vivek Dave. ")
+st.sidebar.info("Developed by Vivek Dave.")
+
+
+
