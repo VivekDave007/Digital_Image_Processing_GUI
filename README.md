@@ -65,43 +65,45 @@ It features a custom-built "PronOS" clean light theme for maximum readability an
     streamlit run app.py
     ```
 
-## 🌐 Deployment (Render Free Tier via GitHub)
+## ☁️ Deployment (Render/Streamlit Cloud)
 
-This repository is fully configured to deploy as a **Docker Container** on the **[Render](https://render.com/) Free Tier**, driven automatically by GitHub pushes. 
+This project is ready for cloud deployment.
+*   **Build Command**: `pip install -r requirements.txt`
+*   **Start Command**: `streamlit run app.py --server.port $PORT --server.address 0.0.0.0`
 
-### Why Render + Docker?
-Streamlit apps running complex image processing libraries (like OpenCV) often crash on standard cloud hosting due to missing C++ system dependencies. We have included a `Dockerfile` that automatically handles these Linux dependencies (like `libgl1-mesa-glx`) so the app runs flawlessly. The included `render.yaml` acts as a one-click deployment blueprint.
+## 📚 Modules Included
 
-### Deployment Steps:
-1.  **Push to GitHub**:
-    Ensure this codebase is pushed to a public or private GitHub repository.
-    ```bash
-    git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
-    git push -u origin main
-    ```
-2.  **Connect Render**:
-    *   Sign up / Log in to [Render Dashboard](https://dashboard.render.com/).
-    *   Click the **New +** button and select **Blueprint**.
-3.  **Deploy**:
-    *   Connect your GitHub account.
-    *   Select the repository where you pushed this code.
-    *   Render will automatically detect the `render.yaml` file.
-    *   Click **Apply**.
-    
-Render will now read the blueprint, build the Docker container using our `Dockerfile`, install OpenCV and Streamlit, and generate a live URL for your application!
+### Part 1: Fundamentals (Chapter 2)
+1.  **Visual Perception**: Simulate eye adaptation (Scotopic/Photopic) and Mach bands.
+2.  **EM Spectrum**: Interactive frequency/energy calculator and band visualization.
+3.  **Acquisition**: Simulate sensor capture modes (Single, Strip, vs Array).
+4.  **Sampling & Quantization**: 
+    *   Spatial Resolution: Visualize downsampling effects (pixelation).
+    *   Gray-Level Resolution: Visualize quantization effects (false contouring).
+    *   Metrics: MSE and PSNR calculation.
+5.  **Pixel Connectivity**: 
+    *   Visualize 4-, 8-, and m-connectivity.
+    *   Region boundary extraction ($\beta(A)$).
+6.  **Math Tools**: Image arithmetic (Addition for noise reduction, Subtraction, Multiplication).
+7.  **Distance Measures**: 
+    *   Calculate Euclidean ($D_E$), City-Block ($D_4$), and Chessboard ($D_8$) distances.
+    *   Visualize Distance Transforms (3D Surface plots).
+8.  **Connected Components**: 
+    *   Manual BFS implementation vs OpenCV Library.
+    *   Component labeling and counting.
+9.  **Image Statistics**: 
+    *   Basic Stats: Mean, Variance, Min, Max.
+    *   Histogram Visualization.
+    *   Contrast Stretching/Normalization.
+    *   Noise Simulation (Gaussian, Salt & Pepper).
 
-> **Note**: Because this uses the Render Free Tier, the application will "spin down" after 15 minutes of inactivity. When you visit it again, it may take 30-50 seconds to wake up.
+### Part 2: Advanced Processing
+1.  **Frequency Domain**: FFT, Lowpass/Highpass filters (Ideal, Butterworth, Gaussian).
+2.  **Spatial Filtering**: Convolution (Gaussian Blur, Median Filter).
+3.  **Morphology**: Erosion, Dilation, Opening, Closing.
 
-## 📁 Repository Structure
-
-```text
-├── app.py                     # Main Streamlit application and routing
-├── requirements.txt           # Python dependencies
-├── .gitignore                 # Standard Python/Streamlit ignore file
-└── chapter2_experiments/      # Modular logic files for various chapters
-    ├── connected_components.py
-    ├── distance_measures.py
-    ├── image_statistics.py
-    ├── pixel_relationships.py
-    └── sampling_quantization_extended.py
-```
+## 🛠️ Tech Stack
+*   **Streamlit**: Web UI Framework
+*   **OpenCV**: Image Processing Logic
+*   **NumPy**: Matrix Operations
+*   **Matplotlib**: Graphing & Plotting
