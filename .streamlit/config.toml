@@ -1,0 +1,4 @@
+# Theme "unlocked" to allow user toggling in UI
+[server]
+headless = true
+enableCORS = false
