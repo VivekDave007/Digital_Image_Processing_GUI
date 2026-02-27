@@ -1,0 +1,10 @@
+# Render Blueprint
+# This file tells Render to build a Web Service using the Docker environment
+services:
+  - type: web
+    name: pronos-dip-platform
+    env: docker
+    plan: free # Use "starter" if you ever upgrade
+    # Streamlit health check is automatically available at /_stcore/health
+    healthCheckPath: /_stcore/health
+    autoDeploy: true # Will automatically redeploy when you push to main branch on GitHub

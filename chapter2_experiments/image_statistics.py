@@ -3,106 +3,99 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-def compute_basic_statistics(image):
-    st.markdown("#### Basic Statistics")
-    mean_val = np.mean(image)
-    var_val = np.var(image)
-    std_val = np.std(image)
-    min_val = np.min(image)
-    max_val = np.max(image)
+def run(global_img=None):
+    st.markdown("<h1>1.9 Image Statistics</h1>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1], gap="small")
     
-    col1, col2, col3, col4, col5 = st.columns(5)
-    col1.metric("Mean", f"{mean_val:.2f}")
-    col2.metric("Variance", f"{var_val:.2f}")
-    col3.metric("Std Dev", f"{std_val:.2f}")
-    col4.metric("Min", f"{min_val}")
-    col5.metric("Max", f"{max_val}")
-    
-    # Histogram
-    hist = cv2.calcHist([image], [0], None, [256], [0, 256])
-    
-    fig, ax = plt.subplots(figsize=(6, 2))
-    ax.plot(hist, color='black')
-    ax.set_title("Grayscale Histogram")
-    ax.set_xlabel("Intensity")
-    ax.set_ylabel("Count")
-    ax.set_xlim([0, 256])
-    st.pyplot(fig)
+    if "stats_mode" not in st.session_state:
+        st.session_state.stats_mode = "Basic Analysis"
+        
+    with col1:
+        st.subheader("Command Center")
+        
+        if global_img is not None:
+            img = cv2.resize(global_img, (200, 200))
+        else:
+            img = np.zeros((200, 200), dtype=np.uint8)
+            for i in range(200):
+                img[i, :] = i
+            cv2.rectangle(img, (50, 50), (150, 150), (100), -1)
+            
+        st.session_state.stats_mode = st.radio(
+            "Operation Matrix", 
+            ["Basic Analysis", "Contrast Stretching", "Inject Gaussian Noise", "Inject Salt & Pepper"]
+        )
+        
+        # Dynamic Parameters based on mode
+        output_img = img.copy()
+        
+        if st.session_state.stats_mode == "Contrast Stretching":
+            st.info("Linearly scales pixel intensities to utilize the full 0-255 dynamic range.")
+            
+        elif st.session_state.stats_mode == "Inject Gaussian Noise":
+            noise_mean = st.slider("Gaussian μ (Mean)", -50.0, 50.0, 0.0)
+            noise_sigma = st.slider("Gaussian σ (Std Dev)", 0.0, 100.0, 25.0)
+            gauss = np.random.normal(noise_mean, noise_sigma, img.shape)
+            noisy_image = img.astype(np.float32) + gauss
+            output_img = np.clip(noisy_image, 0, 255).astype(np.uint8)
+            
+        elif st.session_state.stats_mode == "Inject Salt & Pepper":
+            noise_prob = st.slider("Corruption Probability (p)", 0.0, 0.5, 0.05)
+            thres = 1 - noise_prob
+            
+            # Fast vectorized S&P Noise (much faster than nested loops in old version)
+            rdn = np.random.random(img.shape)
+            output_img[rdn < noise_prob] = 0
+            output_img[rdn > thres] = 255
+            
+    with col2:
+        st.subheader("Viewport Alpha")
+        
+        if st.session_state.stats_mode == "Basic Analysis":
+            st.image(output_img, caption="Analyzed Source Signal", use_container_width=True, clamp=True)
+            
+        elif st.session_state.stats_mode == "Contrast Stretching":
+            min_val, max_val = np.min(img), np.max(img)
+            if max_val - min_val > 0:
+                stretched = 255.0 * (img - min_val) / (max_val - min_val)
+                output_img = np.uint8(stretched)
+            c1, c2 = st.columns(2)
+            c1.image(img, caption=f"Original Profile: [{min_val}, {max_val}]", use_container_width=True, clamp=True)
+            c2.image(output_img, caption="Stretched Output: [0, 255]", use_container_width=True, clamp=True)
+            
+        else:
+            c1, c2 = st.columns(2)
+            c1.image(img, caption="Pristine Source", use_container_width=True, clamp=True)
+            c2.image(output_img, caption="Corrupted Payload", use_container_width=True, clamp=True)
 
-def contrast_stretching(image):
-    st.markdown("#### Contrast Stretching")
-    min_val = np.min(image)
-    max_val = np.max(image)
-    
-    st.write(f"Original Range: [{min_val}, {max_val}]")
-    
-    if max_val - min_val == 0:
-        st.warning("Image has constant value, cannot stretch contrast.")
-        return image
+    with col3:
+        st.subheader("System Telemetry")
         
-    stretched = 255.0 * (image - min_val) / (max_val - min_val)
-    stretched = np.uint8(stretched)
-    
-    display_cols = st.columns(2)
-    with display_cols[0]:
-        st.image(image, caption="Original", clamp=True, use_container_width=True)
-    with display_cols[1]:
-        st.image(stretched, caption="Contrast Stretched", clamp=True, use_container_width=True)
+        # Calculate Stats for the CURRENT active image (output_img)
+        mean_val = np.mean(output_img)
+        var_val = np.var(output_img)
+        std_val = np.std(output_img)
+        min_val = np.min(output_img)
+        max_val = np.max(output_img)
         
-    return stretched
-
-def add_noise(image, noise_type="Gaussian"):
-    noisy_image = image.copy()
-    
-    if noise_type == "Gaussian":
-        mean = st.slider("Mean", -50.0, 50.0, 0.0)
-        sigma = st.slider("Sigma", 0.0, 100.0, 25.0)
-        gauss = np.random.normal(mean, sigma, image.shape)
-        noisy_image = image.astype(np.float32) + gauss
-        noisy_image = np.clip(noisy_image, 0, 255).astype(np.uint8)
+        m1, m2 = st.columns(2)
+        m1.metric("Mean (μ)", f"{mean_val:.2f}")
+        m2.metric("Std Dev (σ)", f"{std_val:.2f}")
         
-    elif noise_type == "Salt & Pepper":
-        prob = st.slider("Noise Probability", 0.0, 0.5, 0.05)
-        thres = 1 - prob
-        for i in range(image.shape[0]):
-            for j in range(image.shape[1]):
-                rdn = np.random.random()
-                if rdn < prob:
-                    noisy_image[i][j] = 0
-                elif rdn > thres:
-                    noisy_image[i][j] = 255
-                    
-    return noisy_image
-
-def run():
-    st.header("Topic D: Image Statistics")
-    
-    # Allow user to upload or use synthetic
-    uploaded_file = st.file_uploader("Upload Image (Optional)", type=['png', 'jpg', 'jpeg'])
-    
-    if uploaded_file:
-        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-        img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
-    else:
-        st.info("Using synthetic gradient image.")
-        img = np.zeros((200, 200), dtype=np.uint8)
-        for i in range(200):
-            img[i, :] = i
-        cv2.rectangle(img, (50, 50), (150, 150), (100), -1)
-
-    st.image(img, caption="Input Image", use_container_width=True)
-    
-    tab1, tab2, tab3 = st.tabs(["Statistics", "Contrast", "Noise"])
-    
-    with tab1:
-        compute_basic_statistics(img)
+        m3, m4 = st.columns(2)
+        m3.metric("Variance", f"{var_val:.2f}")
+        m4.metric("Range", f"[{min_val}, {max_val}]")
         
-    with tab2:
-        contrast_stretching(img)
+        st.markdown("### Intensity Profile")
+        hist = cv2.calcHist([output_img], [0], None, [256], [0, 256])
         
-    with tab3:
-        noise_type = st.selectbox("Noise Type", ["Gaussian", "Salt & Pepper"])
-        noisy = add_noise(img, noise_type)
-        st.image(noisy, caption=f"Noisy Image ({noise_type})", use_container_width=True)
-        st.write("Statistics of Noisy Image:")
-        compute_basic_statistics(noisy)
+        fig, ax = plt.subplots(figsize=(6, 3))
+        fig.patch.set_facecolor('#090a0f') # Cyberpunk Match
+        ax.set_facecolor('#090a0f')
+        ax.plot(hist, color='#00f3ff')
+        ax.fill_between(np.arange(256), hist.flatten(), color='#00f3ff', alpha=0.3)
+        ax.tick_params(colors="#8a8d98")
+        for spine in ax.spines.values():
+            spine.set_color('#8a8d98')
+        ax.set_xlim([0, 255])
+        st.pyplot(fig)

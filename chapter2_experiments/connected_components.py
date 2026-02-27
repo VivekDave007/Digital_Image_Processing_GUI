@@ -51,37 +51,51 @@ def visualize_components(title, labels, num_labels, ax):
     ax.set_title(f"{title}\nCount: {num_labels}")
     ax.axis('off')
 
-def run():
-    st.header("Topic A: Connected Components")
+def run(global_img=None):
+    st.markdown("<h1>1.8 Connected Components</h1>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1], gap="small")
     
-    connectivity = st.radio("Connectivity", [4, 8])
-    
-    # Generate Synthetic Data
-    img = np.zeros((100, 100), dtype=np.uint8)
-    cv2.rectangle(img, (10, 10), (30, 30), 1, -1)
-    cv2.circle(img, (70, 70), 15, 1, -1)
-    cv2.line(img, (50, 10), (50, 40), 1, 3)
-    cv2.line(img, (50, 40), (80, 40), 1, 3)
-    cv2.line(img, (80, 40), (80, 10), 1, 3)
-    img[20, 60] = 1 # Noise
-    img[22, 62] = 1 
-    
-    col1, col2 = st.columns(2)
     with col1:
-        st.subheader("Manual Implementation (BFS)")
-        labels_man, count_man = manual_connected_components(img, connectivity=connectivity)
-        fig1, ax1 = plt.subplots()
-        visualize_components("BFS Result", labels_man, count_man, ax1)
-        st.pyplot(fig1)
-        st.info(f"Detected {count_man} components.")
+        st.subheader("Command Center")
+        connectivity = st.radio("Pixel Connectivity", [4, 8])
         
     with col2:
-        st.subheader("Library Implementation (OpenCV)")
-        labels_lib, count_lib = library_connected_components(img, connectivity=connectivity)
-        fig2, ax2 = plt.subplots()
-        visualize_components("OpenCV Result", labels_lib, count_lib, ax2)
-        st.pyplot(fig2)
-        st.info(f"Detected {count_lib} components.")
+        st.subheader("Viewport Alpha")
         
-    st.image(img * 255, caption="Original Binary Image", width=300)
-    
+        # Generate Synthetic Data
+        img = np.zeros((100, 100), dtype=np.uint8)
+        cv2.rectangle(img, (10, 10), (30, 30), 1, -1)
+        cv2.circle(img, (70, 70), 15, 1, -1)
+        cv2.line(img, (50, 10), (50, 40), 1, 3)
+        cv2.line(img, (50, 40), (80, 40), 1, 3)
+        cv2.line(img, (80, 40), (80, 10), 1, 3)
+        img[20, 60] = 1 # Noise
+        img[22, 62] = 1 
+        
+        ca, cb = st.columns(2)
+        with ca:
+            labels_man, count_man = manual_connected_components(img, connectivity=connectivity)
+            fig1, ax1 = plt.subplots(figsize=(4, 4))
+            fig1.patch.set_facecolor('#090a0f')
+            visualize_components("Manual Route (BFS)", labels_man, count_man, ax1)
+            st.pyplot(fig1)
+            
+        with cb:
+            labels_lib, count_lib = library_connected_components(img, connectivity=connectivity)
+            fig2, ax2 = plt.subplots(figsize=(4, 4))
+            fig2.patch.set_facecolor('#090a0f')
+            visualize_components("OpenCV Library", labels_lib, count_lib, ax2)
+            st.pyplot(fig2)
+
+    with col3:
+        st.subheader("System Telemetry")
+        st.metric("Detected Objects (Manual)", count_man)
+        st.metric("Detected Objects (OpenCV)", count_lib)
+        
+        if connectivity == 4:
+            st.info("4-Connectivity groups only the adjacent North, South, East, West pixels.")
+        else:
+            st.warning("8-Connectivity allows grouping via diagonals.")
+            
+        st.markdown("### Raw Sensor Data")
+        st.image(img * 255, caption="Original Binary Image", use_container_width=True, clamp=True)

@@ -14,170 +14,171 @@ from chapter2_experiments import (
 
 # --- Configuration ---
 st.set_page_config(
-    page_title="DIP Workbench Ultimate",
-    page_icon="👁️",
+    page_title="PronOS DIP Platform",
+    page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # --- CSS Styling ---
-# --- CSS Styling ---
-# --- CSS Styling ---
-# --- CSS Styling ---
-# --- CSS Styling ---
 st.markdown("""
 <style>
-    /* Import Google Font 'Inter' */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-    
-    /* --- KEYFRAME ANIMATIONS --- */
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translate3d(0, 20px, 0); }
-        to { opacity: 1; transform: translate3d(0, 0, 0); }
-    }
-    
-    @keyframes gradientFlow {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+        --bg-main: #F7F7F7;
+        --bg-card: #FFFFFF;
+        --text-main: #000000;
+        --text-muted: #9D9D9D;
+        --accent-green: #367D5D;
+        --accent-red: #C9442E;
+        --border-color: #ECECEC;
     }
 
-    /* --- ADAPTIVE GLOBAL STYLES (Uses Theme Variables) --- */
-    html, body, [class*="css"]  {
-        font-family: 'Inter', sans-serif;
-        color: var(--text-color);
-        scroll-behavior: smooth;
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif !important;
+        color: var(--text-main) !important;
+        background-color: var(--bg-main) !important;
     }
-    
+
     .stApp {
-        background-color: var(--background-color);
-        animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-    
-    /* --- HEADERS --- */
-    h1 {
-        /* Simplified for Reliability: Solid Color with Glow */
-        color: var(--primary-color) !important;
-        font-weight: 800 !important;
-        font-size: 3.5rem !important;
-        padding-bottom: 0.5rem;
-        /* Dynamic Shadow: Uses primary color for a subtle glow */
-        text-shadow: 0 0 20px rgba(128, 128, 128, 0.2);
-    }
-    
-    h2, h3 {
-        color: var(--text-color) !important;
-        border-bottom: 2px solid var(--primary-color);
-    }
-    
-    /* --- SIDEBAR --- */
-    section[data-testid="stSidebar"] {
-        /* Default Desktop behavior using variables */
-        background-color: var(--secondary-background-color);
-        border-right: 1px solid rgba(128, 128, 128, 0.2);
+        background-color: var(--bg-main) !important;
     }
 
-    /* Mobile-specific fix: ULTRA-AGGRESSIVE OPAQUE OVERRIDE */
-    @media (max-width: 768px) {
-        
-        /* Target the main container and ALL internal divs recursively */
-        section[data-testid="stSidebar"], 
-        section[data-testid="stSidebar"] div,
-        div[data-testid="stSidebarUserContent"],
-        div[data-testid="stSidebarNav"] {
-            /* Force the background to be the solid main theme color */
-            background-color: var(--background-color) !important;
-            
-            /* Remove any transparency layers or gradients */
-            background-image: none !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
+    /* Hero Card */
+    .hero-card {
+        background: var(--bg-card);
+        border-radius: 24px;
+        padding: 2.5rem 2rem;
+        border: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
 
-        /* Re-apply z-index and border only to the parent container */
-        section[data-testid="stSidebar"] {
-            border-right: 2px solid rgba(128, 128, 128, 0.2) !important;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.2) !important;
-            opacity: 1 !important;
-            z-index: 999999 !important;
-        }
-        
-        /* Exceptions: Allow buttons/inputs to keep their specific styles, 
-           otherwise they become invisible rectangular blocks of color. */
-        section[data-testid="stSidebar"] button, 
-        section[data-testid="stSidebar"] input, 
-        section[data-testid="stSidebar"] [role="checkbox"],
-        section[data-testid="stSidebar"] .stSlider,
-        section[data-testid="stSidebar"] .stMarkdown, /* Text needs to be visible on top */
-        section[data-testid="stSidebar"] h1,
-        section[data-testid="stSidebar"] h2,
-        section[data-testid="stSidebar"] h3,
-        section[data-testid="stSidebar"] span,
-        section[data-testid="stSidebar"] label {
-             background-color: transparent !important; 
-        }
+    .hero-card h1 {
+        color: var(--text-main) !important;
+        font-weight: 700 !important;
+        font-size: 2.8rem !important;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
     }
-    
-    /* Sidebar Title */
-    section[data-testid="stSidebar"] h1 {
-        font-size: 2.0rem !important;
-        text-align: left !important;
-        background: none !important;
-        -webkit-text-fill-color: var(--primary-color) !important;
-        color: var(--primary-color) !important;
-        margin-bottom: 0;
-        padding-left: 0.2rem;
+
+    .hero-card p {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
     }
-    
-    /* --- WIDGETS & INPUTS --- */
-    /* Let Streamlit handle input backgrounds natively (best for light/dark switching) */
-    .stTextInput > div > div > input, .stSelectbox > div > div > div {
-        border-radius: 8px; 
-    }
-    
-    /* --- BUTTONS --- */
-    .stButton > button {
-        background: linear-gradient(135deg, var(--secondary-background-color) 0%, var(--background-color) 100%);
-        color: var(--primary-color);
-        border: 1px solid var(--primary-color);
-        border-radius: 8px;
-        transition: all 0.3s ease;
+
+    .status-chip {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        border-radius: 999px;
+        background-color: var(--accent-green);
+        color: #FFFFFF;
+        font-size: 0.85rem;
         font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* Sidebar */
+    section[data-testid="stSidebar"] {
+        background-color: var(--bg-card) !important;
+        border-right: 1px solid var(--border-color) !important;
     }
     
+    section[data-testid="stSidebar"] * {
+        color: var(--text-main) !important;
+    }
+
+    .sidebar-card {
+        background: var(--bg-main);
+        border-radius: 16px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color);
+    }
+    .sidebar-card h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--accent-green);
+    }
+    .sidebar-card p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    /* Buttons */
+    .stButton > button {
+        background-color: #000000 !important;
+        color: #FFFFFF !important;
+        border-radius: 999px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: 0.2s ease-in-out;
+        padding: 0.6rem 2rem !important;
+    }
     .stButton > button:hover {
-        background: var(--primary-color);
-        color: var(--background-color); /* Invert on hover */
-        box-shadow: 0 0 15px rgba(0, 173, 181, 0.4);
+        background-color: var(--accent-green) !important;
         transform: translateY(-2px);
     }
-    
-    /* --- IMAGES --- */
+
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 12px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 999px !important;
+        padding: 8px 16px !important;
+        border: 1px solid var(--border-color) !important;
+        background-color: var(--bg-main) !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: var(--accent-green) !important;
+        color: #FFFFFF !important;
+        border-color: var(--accent-green) !important;
+    }
+
+    /* Metrics */
+    [data-testid="stMetricValue"] {
+        color: var(--text-main) !important;
+        font-weight: 700 !important;
+    }
+    [data-testid="stMetricLabel"] {
+        color: var(--accent-green) !important;
+        font-weight: 600 !important;
+    }
+
     img {
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        transition: transform 0.3s ease;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
-    img:hover {
-        transform: scale(1.02);
-    }
-    
-    /* --- ALERTS & EXPANDERS --- */
-    .stAlert {
-        background-color: var(--secondary-background-color);
-        border-left: 4px solid var(--primary-color);
-    }
-    
-    .streamlit-expanderHeader {
-        background-color: var(--secondary-background-color);
-        color: var(--text-color) !important;
-        border-radius: 6px;
+
+    /* Inputs */
+    .stTextInput > div > div > input, .stSelectbox > div > div > div, .stSlider > div > div > div > div {
+        border-radius: 12px !important;
+        border: 1px solid var(--border-color) !important;
+        background-color: var(--bg-main) !important;
     }
 
 </style>
 """, unsafe_allow_html=True)
 
-st.title("Digital Image Processing Workbench")
+st.markdown(
+    """
+    <div class="hero-card">
+        <h1>PronOS Learning Arena</h1>
+        <p>A clean, focused educational environment for mastering digital image processing.</p>
+        <span class="status-chip">EDU MODE • INTERACTIVE • VISUAL-FIRST</span>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+metric_col1, metric_col2, metric_col3 = st.columns(3)
+metric_col1.metric("Learning Tracks", "2", "Fundamentals + Advanced")
+metric_col2.metric("Interactive Modules", "12", "Step-by-step labs")
+metric_col3.metric("Experience Goal", "Practice", "Concept → Experiment")
 
 # --- Utils ---
 @st.cache_data
@@ -228,6 +229,106 @@ def generate_flower_scene(illumination, mach_bands):
         cv2.circle(img, center, 30, color_center, -1)
         
         return img
+
+
+def generate_processed_vision_image(distance_m, light_intensity, zoom_level, global_img=None):
+    """Simulate perceived/processed image based on distance and illumination."""
+    h, w = 320, 320
+    
+    if global_img is not None:
+        # Use global image, scale and zoom it based on distance
+        img = cv2.resize(global_img, (w, h))
+        scale = np.clip(zoom_level * (1.5 / max(distance_m, 0.3)), 0.2, 5.0)
+        M = cv2.getRotationMatrix2D((w//2, h//2), 0, scale)
+        img = cv2.warpAffine(img, M, (w, h))
+    else:
+        img = np.zeros((h, w), dtype=np.uint8)
+        size = int(np.clip(70 * zoom_level * (1.5 / max(distance_m, 0.3)), 18, 120))
+        center = (w // 2, h // 2)
+        cv2.circle(img, center, size, 190, -1)
+        cv2.line(img, (center[0] - size, center[1]), (center[0] + size, center[1]), 240, 3)
+        cv2.line(img, (center[0], center[1] - size), (center[0], center[1] + size), 240, 3)
+
+    # Illumination controls brightness + noise level
+    brightness_scale = 0.55 + 0.9 * light_intensity
+    img = np.clip(img.astype(np.float32) * brightness_scale, 0, 255)
+
+    noise_sigma = 22 * (1.0 - light_intensity)
+    noise = np.random.normal(0, noise_sigma, img.shape)
+    img = np.clip(img + noise, 0, 255).astype(np.uint8)
+
+    # Distance-driven blur (farther object => more blur)
+    blur_k = int(np.clip(1 + 2 * distance_m, 1, 21))
+    if blur_k % 2 == 0:
+        blur_k += 1
+    img = cv2.GaussianBlur(img, (blur_k, blur_k), 0)
+
+    # Basic enhancement stage (simulate digital post-processing)
+    denoised = cv2.GaussianBlur(img, (3, 3), 0)
+    sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]], dtype=np.float32)
+    enhanced = cv2.filter2D(denoised, -1, sharpen_kernel)
+
+    return img, np.clip(enhanced, 0, 255).astype(np.uint8)
+
+
+def render_human_eye_scene(person_x, object_x, light_intensity, wavelength_nm, zoom_level):
+    """2D game-like human + eye ray model with zoom region."""
+    fig, ax = plt.subplots(figsize=(11, 4.6))
+    ax.set_facecolor('#0a1228')
+
+    distance_m = abs(object_x - person_x)
+
+    # Object (thing)
+    obj_size = np.clip(0.18 * zoom_level, 0.08, 0.35)
+    ax.add_patch(plt.Rectangle((object_x - obj_size / 2, 0.20), obj_size, obj_size, color='#42f5ff', alpha=0.9))
+    ax.text(object_x, 0.47, 'Thing', color='white', ha='center', fontsize=10)
+
+    # Human-like stick figure
+    head_center = (person_x, 0.52)
+    ax.add_patch(plt.Circle(head_center, 0.09, fill=False, lw=2.2, color='#ffd166'))
+    ax.plot([person_x, person_x], [0.16, 0.43], color='#ffd166', lw=2.4)  # body
+    ax.plot([person_x - 0.10, person_x + 0.10], [0.32, 0.28], color='#ffd166', lw=2.2)  # arms
+    ax.plot([person_x, person_x - 0.09], [0.16, 0.02], color='#ffd166', lw=2.2)  # leg
+    ax.plot([person_x, person_x + 0.10], [0.16, 0.02], color='#ffd166', lw=2.2)  # leg
+
+    eye = (person_x + 0.03, 0.55)
+    ax.scatter([eye[0]], [eye[1]], c='yellow', s=32, zorder=5)
+    ax.text(person_x, 0.66, 'Human', color='white', ha='center', fontsize=10)
+
+    # Ray color by wavelength
+    if wavelength_nm < 500:
+        ray_color = '#5cc8ff'
+    elif wavelength_nm < 590:
+        ray_color = '#74ffa1'
+    else:
+        ray_color = '#ffbf69'
+
+    # Multiple rays from object edge points to eye
+    ray_alpha = 0.25 + 0.7 * light_intensity
+    for off in np.linspace(-obj_size / 2, obj_size / 2, 7):
+        start = (object_x, 0.20 + obj_size / 2 + off * 0.7)
+        ax.plot([start[0], eye[0]], [start[1], eye[1]], color=ray_color, alpha=ray_alpha, lw=1.4)
+
+    # Eye zoom inset with retinal interpretation
+    inset_x0 = person_x + 0.40
+    ax.add_patch(plt.Circle((inset_x0, 0.42), 0.23, fill=False, lw=2.0, color='#cdb4db'))
+    ax.plot([inset_x0 - 0.23, inset_x0 - 0.17], [0.42, 0.42], color='#cdb4db', lw=2)
+    ax.plot([inset_x0 + 0.17, inset_x0 + 0.23], [0.42, 0.42], color='#cdb4db', lw=2)
+    ax.plot([inset_x0 + 0.13, inset_x0 + 0.13], [0.25, 0.59], color='#ff4d6d', lw=2, alpha=0.8)  # retina
+
+    retinal_scale = np.clip(0.12 * zoom_level / max(distance_m, 0.25), 0.03, 0.16)
+    ax.add_patch(plt.Rectangle((inset_x0 + 0.11 - retinal_scale/2, 0.42 - retinal_scale/2), retinal_scale, retinal_scale,
+                               color='#42f5ff', alpha=0.75))
+    ax.text(inset_x0, 0.69, 'Eye Zoom View', color='white', ha='center', fontsize=9)
+
+    ax.set_xlim(-0.2, 10.2)
+    ax.set_ylim(-0.05, 0.9)
+    ax.set_xlabel('Scene Axis (drag person/object by sliders)')
+    ax.set_yticks([])
+    ax.set_title('Human Vision Interaction: distance + light intensity + eye zoom')
+
+    return fig, distance_m
+
 
 # --- Frequency Domain Helpers ---
 def get_spectrum(img):
@@ -373,14 +474,25 @@ def apply_morphology(img, op_type, struct_elem_shape, kernel_size):
     return img
 
 
-# --- Sidebar Navigation ---
-st.sidebar.title("DIP Workbench")
-st.sidebar.caption("Comprehensive Image Processing Suite")
 
-category = st.sidebar.radio("Select Category", ["1. Fundamentals", "2. Advanced Processing"])
+# --- Sidebar Navigation ---
+st.sidebar.title("📚 Course Catalog")
+st.sidebar.caption("Structured learning tracks • Mission-based experiments")
+st.sidebar.markdown(
+    """
+    <div class="sidebar-card">
+        <h4>🎓 Learning Flow</h4>
+        <p>1) Pick a track<br>2) Choose a module<br>3) Run and compare experiments</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+category = st.sidebar.radio("🎯 Choose Track", ["1. Fundamentals", "2. Advanced Processing"])
 
 if category == "1. Fundamentals":
-    module = st.sidebar.selectbox("Select Module", [
+    st.sidebar.markdown("<span style='font-size:0.78rem;opacity:0.9;color:var(--text-muted);'>Core concepts and intuition builders</span>", unsafe_allow_html=True)
+    module = st.sidebar.selectbox("🧩 Select Module", [
         "1.1 Visual Perception", 
         "1.2 EM Spectrum", 
         "1.3 Acquisition", 
@@ -389,10 +501,12 @@ if category == "1. Fundamentals":
         "1.6 Math Tools",
         "1.7 Distance Measures",
         "1.8 Connected Components",
-        "1.9 Image Statistics"
+        "1.9 Image Statistics",
+        "1.10 3D Eye Vision Game Model"
     ])
 else:
-    module = st.sidebar.selectbox("Select Module", [
+    st.sidebar.markdown("<span style='font-size:0.78rem;opacity:0.9;color:var(--text-muted);'>Hands-on processing and filtering labs</span>", unsafe_allow_html=True)
+    module = st.sidebar.selectbox("⚙️ Select Module", [
         "2.1 Frequency Domain", 
         "2.2 Spatial Filtering", 
         "2.3 Morphology"
@@ -400,6 +514,20 @@ else:
 
 st.sidebar.divider()
 
+st.sidebar.divider()
+st.sidebar.caption("Tip: Start from Fundamentals before moving to Advanced modules.")
+
+# --- GLOBAL IMAGE OVERRIDE ---
+st.sidebar.markdown("### 🖼️ Global Signal Override")
+st.sidebar.caption("Upload an image here to override procedurally generated signals across all compatible modules.")
+global_upload = st.sidebar.file_uploader("Upload Image", type=["jpg", "png", "jpeg", "bmp", "tif"], label_visibility="collapsed")
+
+global_img = None
+if global_upload:
+    file_bytes = np.asarray(bytearray(global_upload.read()), dtype=np.uint8)
+    global_img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
+    if global_img is not None:
+        st.sidebar.success("Global Signal Locked")
 
 # ==========================================
 # PART 1: FUNDAMENTALS (Logic from app (2).py)
@@ -424,193 +552,371 @@ if module == "1.1 Visual Perception":
 
     with col2:
         st.subheader("Simulation")
-        img = generate_flower_scene(illum_lin, mach_bands)
+        if global_img is not None:
+            # Scale global image by illumination purely for demonstration
+            img_scaled = np.clip(global_img.astype(np.float32) * illum_lin * 1.5, 0, 255).astype(np.uint8)
+            img = cv2.cvtColor(img_scaled, cv2.COLOR_GRAY2BGR)
+        else:
+            img = generate_flower_scene(illum_lin, mach_bands)
         st.image(img, channels="BGR", caption="Simulated Scene", use_container_width=True)
-        
-        if mach_bands:
-            st.warning("Note the 'overshoot' brightness at the edges (Mach Band Effect).")
-
 
 elif module == "1.2 EM Spectrum":
     st.header("2. Light & The Electromagnetic Spectrum")
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    # Log Freq: 6 (Radio) to 22 (Gamma)
-    log_freq = st.slider("Frequency (Log Hz)", 6.0, 22.0, 14.5, 0.1)
-    
-    freq = 10**log_freq
-    wavelength = 3e8 / freq
-    energy = 4.135e-15 * freq
-    
-    col_info, col_viz = st.columns(2)
-    
-    with col_info:
-        st.subheader("Physics")
+    with col1:
+        st.subheader("Command Center")
+        # Log Freq: 6 (Radio) to 22 (Gamma)
+        log_freq = st.slider("Frequency (Log Hz)", 6.0, 22.0, 14.5, 0.1)
+        freq = 10**log_freq
+        wavelength = 3e8 / freq
+        energy = 4.135e-15 * freq
+        
+    with col2:
+        st.subheader("Physics Engine")
         st.latex(r"\nu = " + f"{freq:.2e} Hz")
         st.latex(r"\lambda = c / \nu = " + f"{wavelength:.2e} m")
         st.latex(r"E = h\nu = " + f"{energy:.2e} eV")
         
-    with col_viz:
-        st.subheader("Band & Visualization")
-        
+    with col3:
+        st.subheader("Band Analysis")
         if log_freq < 9:
-            st.success("Band: **Radio Waves**")
-            st.info("📡 Used for TV/Radio broadcasting.")
+            st.success("Target Band: **Radio Waves**")
+            st.info("📡 Application: Broadcasting")
         elif log_freq < 12:
-            st.success("Band: **Microwaves**")
-            st.info("📶 Used for Radar & WiFi.")
+            st.success("Target Band: **Microwaves**")
+            st.info("📶 Application: Radar & WiFi")
         elif log_freq < 14.5:
-            st.warning("Band: **Infrared**")
-            st.markdown("🔥 **Heat Energy / Thermal Imaging**")
+            st.warning("Target Band: **Infrared**")
+            st.markdown("🔥 **Thermal Signature Detected**")
         elif log_freq < 15.0:
-            st.error("Band: **Visible Light**")
-            st.markdown("🌈 **The Human Visual Window**")
-            # Show a rainbow gradient or color
+            st.error("Target Band: **Visible Light**")
+            st.markdown("🌈 **Human Visual Window Active**")
         elif log_freq < 17:
-            st.info("Band: **Ultraviolet**")
-            st.markdown("☀️ Causes sunburn & fluorescence.")
+            st.info("Target Band: **Ultraviolet**")
+            st.markdown("☀️ Radiation: Fluorescence")
         elif log_freq < 20:
-            st.info("Band: **X-Rays**")
-            st.markdown("🦴 **Medical Imaging / Security Scanning**")
+            st.info("Target Band: **X-Rays**")
+            st.markdown("🦴 **Penetrating Scan Active**")
         else:
-            st.error("Band: **Gamma Rays**")
-            st.markdown("☢️ Nuclear radiation.")
+            st.error("Target Band: **Gamma Rays**")
+            st.markdown("☢️ **Critical Nuclear Radiation**")
 
+
+    
 elif module == "1.3 Acquisition":
     st.header("3. Image Sensing & Acquisition")
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    tab1, tab2, tab3 = st.tabs(["Single Sensor", "Strip Sensor", "Array Sensor"])
+    # Store state so we can render across columns cleanly
+    if "capture_mode" not in st.session_state:
+        st.session_state.capture_mode = "Single Sensor (Point)"
     
-    with tab1:
-        st.write("**Single Sensor (e.g. Laser Drum Scanner)**: Moves pixel by pixel.")
-        if st.button("Simulate Single Capture"):
-            # Create a placeholder for the image
-            image_placeholder = st.empty()
-            status_text = st.empty()
-            
-            # Create a dummy image (grayscale gradient)
+    with col1:
+        st.subheader("Command Center")
+        st.session_state.capture_mode = st.radio("Sensor Topology", [
+            "Single Sensor (Point)", 
+            "Sensor Strip (Line)", 
+            "Sensor Array (Flat/Instant)"
+        ])
+        
+        trigger = st.button("INITIATE CAPTURE SEQUENCE", use_container_width=True)
+    
+    with col2:
+        st.subheader("Viewport Alpha")
+        image_placeholder = st.empty()
+        
+        if trigger:
             GRID_SIZE = 20
-            img = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
+            if global_img is not None:
+                img = cv2.resize(global_img, (GRID_SIZE, GRID_SIZE))
+            else:
+                img = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
             
-            # Animate pixel by pixel 
-            # (We skip some frames for speed, otherwise 400 updates is too slow for Streamlit)
-            for y in range(GRID_SIZE):
-                for x in range(GRID_SIZE):
-                    # Fill pixel with a pattern
-                    img[y, x] = int((x+y) * 255 / (GRID_SIZE*2))
-                    
-                    # Update UI every row (to be faster)
-                if y % 2 == 0:
-                     # Scale up for visibility
-                     big_img = cv2.resize(img, (300, 300), interpolation=cv2.INTER_NEAREST)
-                     image_placeholder.image(big_img, caption=f"Scanning Row {y+1}/{GRID_SIZE}...", use_container_width=False, clamp=True)
-                     time.sleep(0.05)
+            if st.session_state.capture_mode == "Single Sensor (Point)":
+                for y in range(GRID_SIZE):
+                    for x in range(GRID_SIZE):
+                        img[y, x] = int((x+y) * 255 / (GRID_SIZE*2))
+                    if y % 2 == 0:
+                        big_img = cv2.resize(img, (300, 300), interpolation=cv2.INTER_NEAREST)
+                        image_placeholder.image(big_img, caption=f"Scanning Row {y+1}/{GRID_SIZE}...", use_container_width=False, clamp=True)
+                        time.sleep(0.05)
             
-            # Final Show
+            elif st.session_state.capture_mode == "Sensor Strip (Line)":
+                for y in range(GRID_SIZE):
+                    for x in range(GRID_SIZE):
+                        img[y, x] = int((x+y) * 255 / (GRID_SIZE*2))
+                    big_img = cv2.resize(img, (300, 300), interpolation=cv2.INTER_NEAREST)
+                    image_placeholder.image(big_img, caption=f"Scanning Row {y+1}/{GRID_SIZE}...", use_container_width=False, clamp=True)
+                    time.sleep(0.1)
+            
+            elif st.session_state.capture_mode == "Sensor Array (Flat/Instant)":
+                with st.spinner("Flash..."):
+                    time.sleep(0.2)
+                for y in range(GRID_SIZE):
+                    for x in range(GRID_SIZE):
+                        img[y, x] = int((x+y) * 255 / (GRID_SIZE*2))
+            
             big_img = cv2.resize(img, (300, 300), interpolation=cv2.INTER_NEAREST)
             image_placeholder.image(big_img, caption="Capture Complete", use_container_width=False, clamp=True)
-            status_text.success("Image Captured Row-by-Row, Pixel-by-Pixel!")
             
-    with tab2:
-        st.write("**Sensor Strip (e.g. Flatbed Scanner)**: Moves row by row.")
-        if st.button("Simulate Strip Capture"):
-            image_placeholder = st.empty()
-            GRID_SIZE = 20
-            img = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.uint8)
-            
-            for y in range(GRID_SIZE):
-                # Fill entire row
-                for x in range(GRID_SIZE):
-                    img[y, x] = int((x+y) * 255 / (GRID_SIZE*2))
-                
-                big_img = cv2.resize(img, (300, 300), interpolation=cv2.INTER_NEAREST)
-                image_placeholder.image(big_img, caption=f"Scanning Row {y+1}/{GRID_SIZE}...", use_container_width=False, clamp=True)
-                time.sleep(0.1)
-                
-            status_text = st.success("Image Captured Row-by-Row!")
+        else:
+            st.info("Awaiting Capture Trigger...")
 
-    with tab3:
-        st.write("**Sensor Array (e.g. Digital Camera)**: Captures instantly.")
-        if st.button("Simulate Array Capture"):
-            with st.spinner("Flash..."):
-                time.sleep(0.2)
-            st.success("📸 SNAP! Instant Capture.")
-
+    with col3:
+        st.subheader("System Telemetry")
+        if st.session_state.capture_mode == "Single Sensor (Point)":
+            st.info("Scanner Type: **Microdensitometer**")
+            st.metric("Acquisition Speed", "Slow")
+            st.metric("Mechanics", "2-Axis Motion (X-Y)")
+        elif st.session_state.capture_mode == "Sensor Strip (Line)":
+            st.info("Scanner Type: **Flatbed / Drum**")
+            st.metric("Acquisition Speed", "Medium")
+            st.metric("Mechanics", "1-Axis Motion")
+        else:
+            st.info("Scanner Type: **Digital Camera / CCD App**")
+            st.metric("Acquisition Speed", "Instant")
+            st.metric("Mechanics", "Solid State (No Moving Parts)")
 
 elif module == "1.4 Sampling & Quantization":
-    sampling_quantization_extended.run()
+    sampling_quantization_extended.run(global_img)
 
 
 elif module == "1.5 Pixel Connectivity":
-    pixel_relationships.run()
-    # Old 1.5 logic removed in favor of pixel_relationships.run() which is better.
-    # We kept the block structure to replacement work correctly.
-    pass
+    pixel_relationships.run(global_img)
 
 
 elif module == "1.6 Math Tools":
-    st.header("6. Mathematical Tools")
-    
-    op = st.selectbox("Operation", ["Addition (Noise Reduction)", "Subtraction (Motion Detection)", "Multiplication (ROI Masking)"])
-    
-    col_a, col_b, col_res = st.columns(3)
-    
-    # Generate Bases
-    img_a = np.linspace(0, 255, 256).reshape(1, 256).repeat(256, 0).astype(np.uint8) # Gradient
-    
-    img_b = np.zeros((256, 256), dtype=np.uint8)
-    cv2.rectangle(img_b, (50, 50), (200, 200), 255, -1) # Square
-    
-    with col_a:
-        st.image(img_a, caption="Image A (Gradient)", use_container_width=True)
-        
-    with col_b:
-        st.image(img_b, caption="Image B (Square)", use_container_width=True)
-        
-    with col_res:
-        if "Addition" in op:
-            # Noise Demo
-            noise = np.random.normal(0, 50, img_a.shape).astype(np.float32)
-            noisy = np.clip(img_a + noise, 0, 255).astype(np.uint8)
-            
-            # Simulated Average
-            st.image(noisy, caption="Single Noisy Frame", use_container_width=True)
-            st.caption("Averaging 100 frames restores Image A.")
-            
-        elif "Subtraction" in op:
-            res = cv2.absdiff(img_a, img_b) # Just difference for visual
-            # Logic: B - A
-            # Here let's do (A + Object) - A
-            scene_with_object = img_a.copy()
-            scene_with_object[50:200, 50:200] = 200
-            
-            res = cv2.absdiff(scene_with_object, img_a)
-            st.image(res, caption="Result (Difference)", use_container_width=True)
-            
-        elif "Multiplication" in op:
-            # Masking
-            mask = (img_b > 0).astype(np.float32)
-            res = (img_a.astype(np.float32) * mask).astype(np.uint8)
-            st.image(res, caption="Result (Masked)", use_container_width=True)
+    st.header("6. Mathematical Functions in Digital Image Processing")
+    st.caption("Analyze arithmetic, statistical, trigonometric, transform, morphology, and filtering functions with visual demos.")
 
+    with st.expander("📘 Quick Analysis: Where each function is used in DIP", expanded=False):
+        st.markdown("""
+        - **Arithmetic** (`+`, `-`, `×`, `÷`, `log`, `exp`, `gamma`) → brightness/contrast and dynamic range control.
+        - **Statistical** (mean, median, mode, variance, std, histogram, PDF) → denoising decisions and segmentation thresholds.
+        - **Trigonometric** (`sin`, `cos`, `tan`) → signal modeling and Fourier basis understanding.
+        - **Transforms** (DFT, FFT, DCT, Wavelet) → frequency analysis, compression and multi-resolution interpretation.
+        - **Morphology** (dilation, erosion, opening, closing) → binary shape cleanup and object structure analysis.
+        - **Filtering** (convolution, correlation, Gaussian, Laplacian, Sobel) → smoothing, sharpening and edge extraction.
+        """)
+
+    if global_img is not None:
+        base = cv2.resize(global_img, (256, 256))
+    else:
+        base = np.linspace(0, 255, 256).reshape(1, 256).repeat(256, 0).astype(np.uint8)
+    roi = np.zeros((256, 256), dtype=np.uint8)
+    cv2.rectangle(roi, (56, 56), (200, 200), 255, -1)
+
+    tab_arith, tab_stats, tab_trig, tab_transform, tab_morph, tab_filter = st.tabs([
+        "Arithmetic", "Statistical", "Trigonometric", "Transforms", "Morphology", "Filtering"
+    ])
+
+    with tab_arith:
+        st.subheader("Arithmetic Functions")
+        arith = st.selectbox(
+            "Choose Arithmetic Function",
+            ["Addition", "Subtraction", "Multiplication", "Division", "Logarithmic", "Exponential", "Power-law (Gamma)"],
+        )
+
+        result = base.astype(np.float32)
+        if arith == "Addition":
+            delta = st.slider("Addition Constant", 0, 120, 40)
+            result = base.astype(np.float32) + delta
+            st.info("Used for brightness increase.")
+        elif arith == "Subtraction":
+            delta = st.slider("Subtraction Constant", 0, 120, 40)
+            result = base.astype(np.float32) - delta
+            st.info("Used for brightness reduction/background removal.")
+        elif arith == "Multiplication":
+            scale = st.slider("Multiplication Scale", 0.2, 3.0, 1.5, 0.1)
+            result = base.astype(np.float32) * scale
+            st.info("Used for contrast scaling.")
+        elif arith == "Division":
+            denom = st.slider("Division Constant", 1.0, 8.0, 2.0, 0.1)
+            result = base.astype(np.float32) / denom
+            st.info("Used for controlled intensity compression.")
+        elif arith == "Logarithmic":
+            c = st.slider("Log Constant (c)", 5.0, 80.0, 30.0, 1.0)
+            result = c * np.log1p(base.astype(np.float32))
+            st.info("Enhances darker pixels and compresses high intensities.")
+        elif arith == "Exponential":
+            alpha = st.slider("Exponential Strength", 1.0, 6.0, 3.0, 0.1)
+            norm = base.astype(np.float32) / 255.0
+            result = ((np.exp(alpha * norm) - 1) / (np.exp(alpha) - 1)) * 255
+            st.info("Non-linear enhancement emphasizing bright regions.")
+        else:
+            gamma = st.slider("Gamma (γ)", 0.2, 3.0, 1.6, 0.1)
+            result = 255 * ((base.astype(np.float32) / 255.0) ** gamma)
+            st.info("Power-law transform (gamma correction) for display tuning.")
+
+        result = np.clip(result, 0, 255).astype(np.uint8)
+        display_images(base, result, ("Input Gradient", f"{arith} Output"))
+
+    with tab_stats:
+        st.subheader("Statistical Functions")
+        noise_sigma = st.slider("Add Gaussian Noise (σ)", 0, 60, 20)
+        noisy = np.clip(base.astype(np.float32) + np.random.normal(0, noise_sigma, base.shape), 0, 255).astype(np.uint8)
+
+        mean_val = float(np.mean(noisy))
+        median_val = float(np.median(noisy))
+        mode_val = int(np.argmax(np.bincount(noisy.flatten(), minlength=256)))
+        var_val = float(np.var(noisy))
+        std_val = float(np.std(noisy))
+
+        c1, c2, c3, c4, c5 = st.columns(5)
+        c1.metric("Mean", f"{mean_val:.2f}")
+        c2.metric("Median", f"{median_val:.2f}")
+        c3.metric("Mode", f"{mode_val}")
+        c4.metric("Variance", f"{var_val:.2f}")
+        c5.metric("Std Dev", f"{std_val:.2f}")
+
+        hist = np.bincount(noisy.flatten(), minlength=256)
+        pdf = hist / hist.sum()
+        fig, ax = plt.subplots(1, 2, figsize=(12, 3.6))
+        ax[0].plot(hist, color='cyan')
+        ax[0].set_title('Histogram')
+        ax[0].set_xlabel('Intensity')
+        ax[1].plot(pdf, color='orange')
+        ax[1].set_title('Probability Density Function (PDF)')
+        ax[1].set_xlabel('Intensity')
+        st.pyplot(fig)
+        display_images(base, noisy, ("Reference", "Noisy Input for Analysis"))
+
+    with tab_trig:
+        st.subheader("Trigonometric Functions (sin, cos, tan)")
+        freq = st.slider("Signal Frequency", 1, 20, 5)
+        x = np.linspace(0, 2 * np.pi, 500)
+        fig, ax = plt.subplots(figsize=(10, 3.5))
+        ax.plot(x, np.sin(freq * x), label='sin(x)', color='cyan')
+        ax.plot(x, np.cos(freq * x), label='cos(x)', color='magenta')
+        ax.plot(x, np.tan(freq * x), label='tan(x)', color='yellow', alpha=0.5)
+        ax.set_ylim(-4, 4)
+        ax.legend()
+        ax.set_title('Trigonometric Basis used in Fourier Analysis')
+        st.pyplot(fig)
+        st.info("sin/cos components form the basis of DFT/FFT for frequency decomposition.")
+
+    with tab_transform:
+        st.subheader("Transform Functions")
+        dft = np.fft.fftshift(np.fft.fft2(base))
+        dft_mag = 20 * np.log1p(np.abs(dft))
+
+        fft = fftpack.fftshift(fftpack.fft2(base))
+        fft_mag = 20 * np.log1p(np.abs(fft))
+
+        dct = cv2.dct(base.astype(np.float32))
+        dct_mag = np.log1p(np.abs(dct))
+
+        small = cv2.resize(base, (128, 128), interpolation=cv2.INTER_AREA).astype(np.float32)
+        low = (small[0::2, 0::2] + small[0::2, 1::2] + small[1::2, 0::2] + small[1::2, 1::2]) / 2
+        high_h = (small[0::2, 0::2] - small[0::2, 1::2] + small[1::2, 0::2] - small[1::2, 1::2]) / 2
+        high_v = (small[0::2, 0::2] + small[0::2, 1::2] - small[1::2, 0::2] - small[1::2, 1::2]) / 2
+        high_d = (small[0::2, 0::2] - small[0::2, 1::2] - small[1::2, 0::2] + small[1::2, 1::2]) / 2
+        wavelet_panel = np.block([
+            [low, high_h],
+            [high_v, high_d],
+        ])
+
+        c1, c2 = st.columns(2)
+        c1.image(dft_mag, caption="DFT Magnitude", use_container_width=True, clamp=True)
+        c2.image(fft_mag, caption="FFT Magnitude", use_container_width=True, clamp=True)
+        c3, c4 = st.columns(2)
+        c3.image(dct_mag, caption="DCT Coefficients (JPEG concept)", use_container_width=True, clamp=True)
+        c4.image(np.abs(wavelet_panel), caption="1-level Haar Wavelet Decomposition", use_container_width=True, clamp=True)
+
+    with tab_morph:
+        st.subheader("Morphological Functions")
+        morph_op = st.selectbox("Morphology Operation", ["Dilation", "Erosion", "Opening", "Closing"])
+        k = st.slider("Kernel Size", 1, 25, 5, step=2)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (k, k))
+        binary = (roi > 0).astype(np.uint8) * 255
+
+        if morph_op == "Dilation":
+            morph_res = cv2.dilate(binary, kernel, iterations=1)
+        elif morph_op == "Erosion":
+            morph_res = cv2.erode(binary, kernel, iterations=1)
+        elif morph_op == "Opening":
+            morph_res = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+        else:
+            morph_res = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+
+        display_images(binary, morph_res, ("Input Binary Shape", morph_op))
+
+    with tab_filter:
+        st.subheader("Filtering Functions")
+        filter_choice = st.selectbox("Select Filter Function", ["Convolution", "Correlation", "Gaussian", "Laplacian", "Sobel"])
+
+        if filter_choice == "Convolution":
+            kernel = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]], dtype=np.float32) / 9
+            filtered = cv2.filter2D(base, -1, cv2.flip(kernel, -1))
+        elif filter_choice == "Correlation":
+            kernel = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]], dtype=np.float32)
+            filtered = cv2.filter2D(base, -1, kernel)
+        elif filter_choice == "Gaussian":
+            filtered = cv2.GaussianBlur(base, (7, 7), 1.2)
+        elif filter_choice == "Laplacian":
+            filtered = cv2.convertScaleAbs(cv2.Laplacian(base, cv2.CV_64F))
+        else:
+            sx = cv2.Sobel(base, cv2.CV_64F, 1, 0, ksize=3)
+            sy = cv2.Sobel(base, cv2.CV_64F, 0, 1, ksize=3)
+            filtered = cv2.convertScaleAbs(np.hypot(sx, sy))
+
+        display_images(base, filtered, ("Input Image", f"{filter_choice} Output"))
 
 elif module == "1.7 Distance Measures":
-    distance_measures.run()
+    distance_measures.run(global_img)
 
 elif module == "1.8 Connected Components":
-    connected_components.run()
+    connected_components.run(global_img)
 
 elif module == "1.9 Image Statistics":
-    image_statistics.run()
+    image_statistics.run(global_img)
 
+
+
+elif module == "1.10 3D Eye Vision Game Model":
+    st.header("10. Human Vision Game Model (Interactive)")
+    st.write("Move (drag via sliders) the human and thing positions, zoom into eye vision, and observe processed output image with distance/light-ray changes.")
+
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        person_x = st.slider("Drag Human Position", 0.8, 8.5, 5.0, 0.1)
+    with c2:
+        object_x = st.slider("Drag Thing Position", 0.5, 8.8, 2.0, 0.1)
+    with c3:
+        zoom_level = st.slider("Eye Zoom", 0.6, 2.5, 1.4, 0.1)
+
+    c4, c5 = st.columns(2)
+    with c4:
+        light_intensity = st.slider("Light Ray Intensity", 0.1, 1.0, 0.75, 0.05)
+    with c5:
+        wavelength_nm = st.slider("Wavelength (nm)", 420, 700, 550, 5)
+
+    scene_fig, distance_m = render_human_eye_scene(person_x, object_x, light_intensity, wavelength_nm, zoom_level)
+    st.pyplot(scene_fig)
+
+    perceived, processed = generate_processed_vision_image(distance_m, light_intensity, zoom_level, global_img)
+    display_images(perceived, processed, ("Perceived Image (retina-like)", "Processed Image (digital enhancement)"))
+
+    st.metric("Distance Between Human and Thing", f"{distance_m:.2f} m")
+    st.markdown('''
+    **Input controls:** distance change (human vs thing position) and light ray intensity.  
+    **Output:** processed image of the thing after simulated vision + digital enhancement.
+    ''')
 
 # ==========================================
 # PART 2: ADVANCED PROCESSING (Logic from app.py - Workbench)
 # ==========================================
 elif category == "2. Advanced Processing":
-    uploaded_file = st.sidebar.file_uploader("Upload an Image", type=["jpg", "png", "jpeg", "bmp", "tif"])
+    if global_img is not None:
+        original_img = global_img
+    else:
+        # Provide a default image if none uploaded for advanced processing
+        original_img = np.zeros((300, 300), dtype=np.uint8)
+        cv2.circle(original_img, (150, 150), 100, 255, -1)
+        st.warning("No Global Image Uploaded. Using default test shape.")
 
-    if uploaded_file:
-        original_img = load_image(uploaded_file)
+    if True:
         
         if module == "2.1 Frequency Domain":
             st.header("Frequency Domain Filtering")
