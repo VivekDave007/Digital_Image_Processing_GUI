@@ -1,0 +1,215 @@
+/* --- THEME VARIABLES --- */
+:root {
+    --bg-base: #090a0f;
+    --bg-surface: #12141d;
+    --bg-panel: #1a1d27;
+    --neon-cyan: #00f3ff;
+    --neon-pink: #ff003c;
+    --neon-purple: #bc13fe;
+    --text-main: #e0e0e0;
+    --text-muted: #8a8d98;
+    --border-glow: 0 0 10px rgba(0, 243, 255, 0.5), inset 0 0 5px rgba(0, 243, 255, 0.2);
+}
+
+/* --- RESET & BASIC SETUP --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* Rigid 100vh app */
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--text-main);
+    background-color: var(--bg-base);
+    background-image: 
+        linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+/* --- THE 3-PANE GRID LAYOUT --- */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 25% 50% 25%;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Common Pane Styles */
+.pane {
+    height: 100%;
+    overflow-y: auto;
+    padding: 1.5rem;
+    border-right: 1px solid rgba(0, 243, 255, 0.1);
+}
+.pane:last-child {
+    border-right: none;
+}
+
+/* --- SPECIFIC PANES --- */
+/* Left: Controls */
+.pane-controls {
+    background-color: var(--bg-surface);
+    box-shadow: 5px 0 20px rgba(0, 243, 255, 0.05);
+    z-index: 10;
+}
+
+/* Center: Viewport */
+.pane-viewport {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+/* Right: Telemetry */
+.pane-telemetry {
+    background-color: var(--bg-surface);
+    border-left: 1px solid rgba(255, 0, 60, 0.2);
+    box-shadow: -5px 0 20px rgba(255, 0, 60, 0.05);
+    z-index: 10;
+}
+
+/* --- TYPOGRAPHY --- */
+h1 {
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    color: transparent;
+    background: -webkit-linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
+    -webkit-background-clip: text;
+    text-shadow: 0 0 10px rgba(188, 19, 254, 0.4);
+    margin-bottom: 2rem;
+    letter-spacing: 2px;
+}
+
+h2 {
+    color: var(--neon-pink);
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--neon-pink);
+    padding-bottom: 5px;
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+}
+
+.mono-text {
+    font-family: 'Fira Code', monospace;
+}
+
+/* --- FORMS & INPUTS --- */
+.control-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+}
+
+input[type="range"] {
+    width: 100%;
+    appearance: none;
+    background: transparent;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    background: var(--neon-pink);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    margin-top: -6px;
+    box-shadow: 0 0 10px var(--neon-pink);
+}
+
+/* --- BUTTONS --- */
+button.cyber-btn {
+    background: transparent;
+    color: var(--neon-cyan);
+    border: 1px solid var(--neon-cyan);
+    padding: 0.75rem 1.5rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: var(--border-glow);
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+button.cyber-btn:hover {
+    background: var(--neon-cyan);
+    color: #000;
+    box-shadow: 0 0 20px var(--neon-cyan);
+}
+
+/* --- IMAGES & VIEWER --- */
+.viewer-card {
+    background-color: var(--bg-panel);
+    border: 1px solid rgba(0, 243, 255, 0.2);
+    padding: 1rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+    position: relative;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.viewer-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 20px; height: 2px;
+    background: var(--neon-cyan);
+}
+
+.viewer-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 20px; height: 2px;
+    background: var(--neon-cyan);
+}
+
+img.render-canvas {
+    max-width: 100%;
+    border-radius: 4px;
+    border: 1px solid var(--neon-purple);
+    box-shadow: 0 0 20px rgba(188, 19, 254, 0.2);
+}
+
+/* --- TELEMETRY WIDGETS --- */
+.telemetry-card {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 0, 60, 0.3);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.metric-value {
+    color: var(--neon-cyan);
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+}
