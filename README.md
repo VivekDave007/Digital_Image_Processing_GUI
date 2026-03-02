@@ -11,25 +11,37 @@ It features a custom-built "PronOS" clean light theme for maximum readability an
 
 ## 🚀 Features
 
-### Track 1: Fundamentals
-*   **1.1 Visual Perception**: Interactive simulation of human eye adaptation (Scotopic vs. Photopic vision) and Mach Band illusions.
-*   **1.2 EM Spectrum**: Calculate and visualize properties of the Electromagnetic Spectrum (Frequency, Wavelength, Energy) across different bands.
-*   **1.3 Acquisition**: Simulates different image acquisition topologies (Microdensitometer point scanning, Line scanning, and Solid State array capture) with real-time visualizations.
-*   **1.4 Sampling & Quantization**: Explore how spatial resolution and intensity levels affect image quality (includes zooming and histogram analysis).
-*   **1.5 Pixel Connectivity**: Interactive grid to understand 4-connectivity, 8-connectivity, and m-connectivity.
-*   **1.6 Math Tools**: A comprehensive suite of mathematical functions (Arithmetic, Statistical, Trigonometric, Transforms, Morphology, Filtering) applied to a unified input source.
-*   **1.7 Distance Measures**: Learn Euclidean, City-Block (D4), and Chessboard (D8) distance metrics.
-*   **1.8 Connected Components**: Simulate Connected Component Labeling algorithms on binary shapes.
-*   **1.9 Image Statistics**: Analyze histograms, PDFs, Mean, Variance, Mode, and spatial distributions of noise.
-*   **1.10 3D Eye Vision Game Model**: A sophisticated 2D/3D physics model demonstrating optics, light rays, wavelength scattering, and retinal perception using Matplotlib.
+### 1. Fundamentals Concept Modules
+Organized into interactive Chapters:
+*   **Chapter 1: Fundamentals of Image Formation**: 
+    *   `1.1` Visual Perception (Scotopic/Photopic adaptation, Mach bands)
+    *   `1.2` Electromagnetic Spectrum
+    *   `1.3` Image Acquisition topology
+*   **Chapter 2: Image Digitization**: 
+    *   `2.1` Sampling & Quantization resolution testing
+    *   `2.2` Pixel Connectivity (4, 8, m-paths)
+    *   `2.3` Distance Measures
+*   **Chapter 3: Image Representation & Math Tools**: 
+    *   `3.1` Mathematical Tools (Interactive 6-tab suite for Arithmetic, Statistical, Trigonometric, Transforms, Morphology, and Filtering)
+    *   `3.2` Connected Components
+    *   `3.3` Image Statistics
+*   **Chapter 4: Advanced Vision Concepts**: 
+    *   `4.1` 3D Eye Vision Game Model: A sophisticated physics engine demonstrating light rays tracking a visual object into the eye.
+    *   `Anatomical Eye Exploration`: Interactive, dynamically rendered 2D eye cross-section. Toggle labels, highlight physiological features, and physically mutate sliders (Pupil Dilation, Lens Thickness, Cornea Bulge) to simulate Myopia and Astigmatism directly onto an image feed!
 
-### Track 2: Advanced Processing
-*   **2.1 Frequency Domain**: Apply Ideal, Butterworth, and Gaussian lowpass/highpass filters in the Fourier domain.
-*   **2.2 Spatial Filtering**: Add specialized noise and apply custom convolution, median, and Gaussian blurs.
-*   **2.3 Morphology**: Perform complex morphological operations (Erosion, Dilation, Opening, Closing) with adjustable structuring elements.
+### 2. Advanced Processing Track
+*   **Chapter 5: Spatial Domain Processing**:
+    *   `5.1` Spatial Filtering (Convolution, median, and Gaussian blur kernels)
+*   **Chapter 6: Frequency Domain Processing**:
+    *   `6.1` Frequency Domain (Ideal, Butterworth, and Gaussian filtering)
+*   **Chapter 7: Morphological Image Processing**:
+    *   `7.1` Morphology (Erosion, Dilation, Opening, Closing routines)
 
 ### Global Features
-*   **Unified Global Image Override**: Upload a custom image from the sidebar to inject it universally into over a dozen different physics and mathematical simulations across the app!
+*   **Native Streamlit Light & Dark Mode**: The custom CSS seamlessly inherits Streamlit's native theme engine without aggressive overrides. Toggle between light and dark modes in the settings menu for a pixel-perfect, highly readable aesthetic in any environment.
+*   **Unified Global Image Override**: Upload a custom image directly from the unified sidebar to inject it simultaneously across a dozen different physics and mathematical simulations across the app's chapters.
+
+
 
 ## 💻 Tech Stack
 
@@ -65,45 +77,43 @@ It features a custom-built "PronOS" clean light theme for maximum readability an
     streamlit run app.py
     ```
 
-## ☁️ Deployment (Render/Streamlit Cloud)
+## 🌐 Deployment (Render Free Tier via GitHub)
 
-This project is ready for cloud deployment.
-*   **Build Command**: `pip install -r requirements.txt`
-*   **Start Command**: `streamlit run app.py --server.port $PORT --server.address 0.0.0.0`
+This repository is fully configured to deploy as a **Docker Container** on the **[Render](https://render.com/) Free Tier**, driven automatically by GitHub pushes. 
 
-## 📚 Modules Included
+### Why Render + Docker?
+Streamlit apps running complex image processing libraries (like OpenCV) often crash on standard cloud hosting due to missing C++ system dependencies. We have included a `Dockerfile` that automatically handles these Linux dependencies (like `libgl1-mesa-glx`) so the app runs flawlessly. The included `render.yaml` acts as a one-click deployment blueprint.
 
-### Part 1: Fundamentals (Chapter 2)
-1.  **Visual Perception**: Simulate eye adaptation (Scotopic/Photopic) and Mach bands.
-2.  **EM Spectrum**: Interactive frequency/energy calculator and band visualization.
-3.  **Acquisition**: Simulate sensor capture modes (Single, Strip, vs Array).
-4.  **Sampling & Quantization**: 
-    *   Spatial Resolution: Visualize downsampling effects (pixelation).
-    *   Gray-Level Resolution: Visualize quantization effects (false contouring).
-    *   Metrics: MSE and PSNR calculation.
-5.  **Pixel Connectivity**: 
-    *   Visualize 4-, 8-, and m-connectivity.
-    *   Region boundary extraction ($\beta(A)$).
-6.  **Math Tools**: Image arithmetic (Addition for noise reduction, Subtraction, Multiplication).
-7.  **Distance Measures**: 
-    *   Calculate Euclidean ($D_E$), City-Block ($D_4$), and Chessboard ($D_8$) distances.
-    *   Visualize Distance Transforms (3D Surface plots).
-8.  **Connected Components**: 
-    *   Manual BFS implementation vs OpenCV Library.
-    *   Component labeling and counting.
-9.  **Image Statistics**: 
-    *   Basic Stats: Mean, Variance, Min, Max.
-    *   Histogram Visualization.
-    *   Contrast Stretching/Normalization.
-    *   Noise Simulation (Gaussian, Salt & Pepper).
+### Deployment Steps:
+1.  **Push to GitHub**:
+    Ensure this codebase is pushed to a public or private GitHub repository.
+    ```bash
+    git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+    git push -u origin main
+    ```
+2.  **Connect Render**:
+    *   Sign up / Log in to [Render Dashboard](https://dashboard.render.com/).
+    *   Click the **New +** button and select **Blueprint**.
+3.  **Deploy**:
+    *   Connect your GitHub account.
+    *   Select the repository where you pushed this code.
+    *   Render will automatically detect the `render.yaml` file.
+    *   Click **Apply**.
+    
+Render will now read the blueprint, build the Docker container using our `Dockerfile`, install OpenCV and Streamlit, and generate a live URL for your application!
 
-### Part 2: Advanced Processing
-1.  **Frequency Domain**: FFT, Lowpass/Highpass filters (Ideal, Butterworth, Gaussian).
-2.  **Spatial Filtering**: Convolution (Gaussian Blur, Median Filter).
-3.  **Morphology**: Erosion, Dilation, Opening, Closing.
+> **Note**: Because this uses the Render Free Tier, the application will "spin down" after 15 minutes of inactivity. When you visit it again, it may take 30-50 seconds to wake up.
 
-## 🛠️ Tech Stack
-*   **Streamlit**: Web UI Framework
-*   **OpenCV**: Image Processing Logic
-*   **NumPy**: Matrix Operations
-*   **Matplotlib**: Graphing & Plotting
+## 📁 Repository Structure
+
+```text
+├── app.py                     # Main Streamlit application and routing
+├── requirements.txt           # Python dependencies
+├── .gitignore                 # Standard Python/Streamlit ignore file
+└── chapter2_experiments/      # Modular logic files for various chapters
+    ├── connected_components.py
+    ├── distance_measures.py
+    ├── image_statistics.py
+    ├── pixel_relationships.py
+    └── sampling_quantization_extended.py
+```

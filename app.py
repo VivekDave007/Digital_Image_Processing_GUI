@@ -25,39 +25,22 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    :root {
-        --bg-main: #F7F7F7;
-        --bg-card: #FFFFFF;
-        --text-main: #000000;
-        --text-muted: #9D9D9D;
-        --accent-green: #367D5D;
-        --accent-red: #C9442E;
-        --border-color: #ECECEC;
-    }
-
-    html, body, [class*="css"] {
+    html, body, .stApp {
         font-family: 'Inter', sans-serif !important;
-        color: var(--text-main) !important;
-        background-color: var(--bg-main) !important;
     }
 
-    .stApp {
-        background-color: var(--bg-main) !important;
-    }
-
-    /* Hero Card */
+    /* Hero Card - Use Theme Aware standard transparent overlays */
     .hero-card {
-        background: var(--bg-card);
+        background: rgba(128, 128, 128, 0.05);
         border-radius: 24px;
         padding: 2.5rem 2rem;
-        border: 1px solid var(--border-color);
+        border: 1px solid rgba(128, 128, 128, 0.2);
         margin-bottom: 2rem;
         text-align: center;
         box-shadow: 0 4px 20px rgba(0,0,0,0.03);
     }
 
     .hero-card h1 {
-        color: var(--text-main) !important;
         font-weight: 700 !important;
         font-size: 2.8rem !important;
         margin-bottom: 0.5rem;
@@ -65,87 +48,66 @@ st.markdown("""
     }
 
     .hero-card p {
-        color: var(--text-muted);
         font-size: 1.1rem;
         margin-bottom: 1rem;
+        opacity: 0.8;
     }
 
     .status-chip {
         display: inline-block;
         padding: 0.4rem 1rem;
         border-radius: 999px;
-        background-color: var(--accent-green);
-        color: #FFFFFF;
+        background-color: #367D5D;
+        color: #FFFFFF !important;
         font-size: 0.85rem;
         font-weight: 600;
         letter-spacing: 0.5px;
     }
 
-    /* Sidebar */
-    section[data-testid="stSidebar"] {
-        background-color: var(--bg-card) !important;
-        border-right: 1px solid var(--border-color) !important;
-    }
-    
-    section[data-testid="stSidebar"] * {
-        color: var(--text-main) !important;
-    }
-
+    /* Sidebar Custom Containers */
     .sidebar-card {
-        background: var(--bg-main);
+        background: rgba(128, 128, 128, 0.05);
         border-radius: 16px;
         padding: 1rem;
         margin-bottom: 1rem;
-        border: 1px solid var(--border-color);
+        border: 1px solid rgba(128, 128, 128, 0.2);
     }
     .sidebar-card h4 {
         margin: 0 0 0.5rem 0;
-        color: var(--accent-green);
+        color: #367D5D !important;
     }
     .sidebar-card p {
         margin: 0;
         font-size: 0.85rem;
-        color: var(--text-muted);
+        opacity: 0.8;
     }
 
-    /* Buttons */
+    /* Pill Buttons (Theme Aware) */
     .stButton > button {
-        background-color: #000000 !important;
-        color: #FFFFFF !important;
         border-radius: 999px !important;
         font-weight: 600 !important;
-        border: none !important;
         transition: 0.2s ease-in-out;
         padding: 0.6rem 2rem !important;
     }
     .stButton > button:hover {
-        background-color: var(--accent-green) !important;
         transform: translateY(-2px);
     }
 
-    /* Tabs */
+    /* Pill Tabs (Theme Aware) */
     .stTabs [data-baseweb="tab-list"] {
         gap: 12px;
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 999px !important;
         padding: 8px 16px !important;
-        border: 1px solid var(--border-color) !important;
-        background-color: var(--bg-main) !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: var(--accent-green) !important;
-        color: #FFFFFF !important;
-        border-color: var(--accent-green) !important;
+        border: 1px solid rgba(128, 128, 128, 0.2) !important;
     }
 
-    /* Metrics */
+    /* Metrics Styling */
     [data-testid="stMetricValue"] {
-        color: var(--text-main) !important;
         font-weight: 700 !important;
     }
     [data-testid="stMetricLabel"] {
-        color: var(--accent-green) !important;
         font-weight: 600 !important;
     }
 
@@ -154,13 +116,11 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
-    /* Inputs */
+    /* Inputs rounded */
     .stTextInput > div > div > input, .stSelectbox > div > div > div, .stSlider > div > div > div > div {
         border-radius: 12px !important;
-        border: 1px solid var(--border-color) !important;
-        background-color: var(--bg-main) !important;
+        border: 1px solid rgba(128, 128, 128, 0.2) !important;
     }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -237,17 +197,24 @@ def generate_processed_vision_image(distance_m, light_intensity, zoom_level, glo
     
     if global_img is not None:
         # Use global image, scale and zoom it based on distance
-        img = cv2.resize(global_img, (w, h))
+        input_img = cv2.resize(global_img, (w, h))
         scale = np.clip(zoom_level * (1.5 / max(distance_m, 0.3)), 0.2, 5.0)
         M = cv2.getRotationMatrix2D((w//2, h//2), 0, scale)
-        img = cv2.warpAffine(img, M, (w, h))
+        img = cv2.warpAffine(input_img, M, (w, h))
     else:
-        img = np.zeros((h, w), dtype=np.uint8)
-        size = int(np.clip(70 * zoom_level * (1.5 / max(distance_m, 0.3)), 18, 120))
+        input_img = np.zeros((h, w), dtype=np.uint8)
+        size = int(np.clip(70 * 1.0 * (1.5 / 1.5), 18, 120)) # Fixed size for input
         center = (w // 2, h // 2)
-        cv2.circle(img, center, size, 190, -1)
-        cv2.line(img, (center[0] - size, center[1]), (center[0] + size, center[1]), 240, 3)
-        cv2.line(img, (center[0], center[1] - size), (center[0], center[1] + size), 240, 3)
+        cv2.circle(input_img, center, size, 190, -1)
+        cv2.line(input_img, (center[0] - size, center[1]), (center[0] + size, center[1]), 240, 3)
+        cv2.line(input_img, (center[0], center[1] - size), (center[0], center[1] + size), 240, 3)
+        
+        # apply zoom for the eye view
+        img = np.zeros((h, w), dtype=np.uint8)
+        size_perceived = int(np.clip(70 * zoom_level * (1.5 / max(distance_m, 0.3)), 18, 120))
+        cv2.circle(img, center, size_perceived, 190, -1)
+        cv2.line(img, (center[0] - size_perceived, center[1]), (center[0] + size_perceived, center[1]), 240, 3)
+        cv2.line(img, (center[0], center[1] - size_perceived), (center[0], center[1] + size_perceived), 240, 3)
 
     # Illumination controls brightness + noise level
     brightness_scale = 0.55 + 0.9 * light_intensity
@@ -268,7 +235,191 @@ def generate_processed_vision_image(distance_m, light_intensity, zoom_level, glo
     sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]], dtype=np.float32)
     enhanced = cv2.filter2D(denoised, -1, sharpen_kernel)
 
-    return img, np.clip(enhanced, 0, 255).astype(np.uint8)
+    return input_img, img, np.clip(enhanced, 0, 255).astype(np.uint8)
+
+
+
+
+def simulate_physiological_vision(global_img, pupil, lens, cornea):
+    if global_img is not None:
+        img = cv2.resize(global_img, (320, 320))
+    else:
+        img = np.zeros((320, 320), dtype=np.uint8)
+        cv2.circle(img, (160, 160), 80, 200, -1)
+        cv2.line(img, (160, 60), (160, 260), 255, 5)
+        cv2.line(img, (60, 160), (260, 160), 255, 5)
+        
+    result = img.astype(np.float32)
+
+    # 1. Pupil Dilation -> Brightness (0.7 is baseline)
+    brightness_factor = pupil / 0.7
+    result = result * brightness_factor
+    
+    # 2. Lens Thickness -> Defocus blur (Myopia/Hyperopia)
+    lens_dev = abs(lens - 0.7)
+    if lens_dev > 0.05:
+        k = int(lens_dev * 35)
+        if k % 2 == 0: 
+            k += 1
+        if k >= 3:
+            result = cv2.GaussianBlur(result, (k, k), 0)
+            
+    # 3. Cornea Bulge -> Astigmatism (directional blur)
+    cornea_dev = cornea - 1.2
+    if abs(cornea_dev) > 0.05:
+        k = int(abs(cornea_dev) * 45)
+        if k % 2 == 0: 
+            k += 1
+        if k >= 3:
+            kernel = np.zeros((k, k), dtype=np.float32)
+            if cornea_dev > 0:
+                kernel[:, k//2] = 1.0 / k # Vertical blur for steep cornea
+            else:
+                kernel[k//2, :] = 1.0 / k # Horizontal blur for flat cornea
+            result = cv2.filter2D(result, -1, kernel)
+            
+    return img, np.clip(result, 0, 255).astype(np.uint8)
+
+def render_anatomical_eye_scene(highlight_part="None", show_labels=True, pupil_dilation=0.7, lens_thickness=0.7, cornea_bulge=1.2):
+    """Render a 2D cross-section of the human eye anatomy with interactive highlighting."""
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.set_facecolor('#0a1228') # Cyberpunk dark background
+    
+    # Coordinates for center of the eye
+    cx, cy = 5.0, 5.0
+    radius = 3.0
+
+    # Colors
+    colors = {
+        "Sclera": "#e0e0e0",
+        "Cornea": "#a8d8ea",
+        "Choroid": "#ff6b6b",
+        "Retina": "#ffd166",
+        "Lens": "#cdb4db",
+        "Iris": "#457b9d",
+        "Optic Nerve": "#f4a261",
+        "Macula": "#ff9f1c"
+    }
+
+    # Apply highlight glow if selected
+    def get_color(part_name, base_color):
+        if highlight_part == part_name:
+            return "#00f3ff" # Neon cyan glow for highlighted part
+        return base_color
+
+    def get_alpha(part_name, base_alpha):
+        if highlight_part == part_name:
+            return 1.0
+        elif highlight_part != "None":
+            return max(0.2, base_alpha - 0.4) # Dim others
+        return base_alpha
+
+    # Sclera (Outer white shell)
+    sclera = plt.Circle((cx, cy), radius, color=get_color("Sclera", colors["Sclera"]), 
+                        fill=False, lw=4, alpha=get_alpha("Sclera", 0.9))
+    ax.add_patch(sclera)
+
+    # Choroid (Vascular layer)
+    choroid = plt.Circle((cx, cy), radius - 0.1, color=get_color("Choroid", colors["Choroid"]), 
+                         fill=False, lw=3, alpha=get_alpha("Choroid", 0.8))
+    ax.add_patch(choroid)
+
+    # Retina (Inner neural layer - stops at anterior)
+    theta1, theta2 = 45, 315 # degrees for the back curve
+    retina = cv2.ellipse2Poly((int(cx*100), int(cy*100)), (int((radius-0.2)*100), int((radius-0.2)*100)), 
+                              0, theta1, theta2, 5)
+    retina_x = retina[:, 0] / 100.0
+    retina_y = retina[:, 1] / 100.0
+    ax.plot(retina_x, retina_y, color=get_color("Retina", colors["Retina"]), 
+            lw=3, alpha=get_alpha("Retina", 0.9))
+
+    # Macula (Fovea centralis)
+    macula_y = cy
+    macula_x = cx + radius - 0.2
+    ax.plot([macula_x, macula_x], [macula_y - 0.3, macula_y + 0.3], 
+            color=get_color("Macula", colors["Macula"]), lw=5, alpha=get_alpha("Macula", 1.0))
+
+    # Optic Nerve (Exit pathway)
+    nerve_y1, nerve_y2 = cy - 0.4, cy - 0.8
+    nerve_x = cx + radius - 0.15
+    ax.plot([nerve_x, nerve_x + 1.5], [nerve_y1, nerve_y1 - 0.2], 
+            color=get_color("Optic Nerve", colors["Optic Nerve"]), lw=3, alpha=get_alpha("Optic Nerve", 0.9))
+    ax.plot([nerve_x, nerve_x + 1.5], [nerve_y2, nerve_y2 - 0.2], 
+            color=get_color("Optic Nerve", colors["Optic Nerve"]), lw=3, alpha=get_alpha("Optic Nerve", 0.9))
+    # 'Blind spot' gap in retina
+    ax.plot([nerve_x-0.05, nerve_x-0.05], [nerve_y2, nerve_y1], color='#0a1228', lw=4, zorder=5)
+
+    # Cornea (Bulging front clear part)
+    # cornea_bulge is 0.8 (flat) to 1.6 (steep) - standard is 1.2
+    cornea_cx = cx - radius + 1.6 - cornea_bulge
+    cornea_radius = cornea_bulge
+    cornea = plt.Circle((cornea_cx, cy), cornea_radius, color=get_color("Cornea", colors["Cornea"]), 
+                        fill=False, lw=3, alpha=get_alpha("Cornea", 0.7))
+    ax.add_patch(cornea)
+    # Mask inner part of cornea circle to make it a bulge
+    ax.add_patch(plt.Rectangle((cx - radius, 0), radius, 10, color='#0a1228', zorder=2))
+
+    # Re-draw the anterior sclera edge to meet cornea
+    ax.plot([cx - radius + 0.1, cx - radius + 0.3], [cy + 0.9, cy + 1.1], color=get_color("Sclera", colors["Sclera"]), lw=4, zorder=3)
+    ax.plot([cx - radius + 0.1, cx - radius + 0.3], [cy - 0.9, cy - 1.1], color=get_color("Sclera", colors["Sclera"]), lw=4, zorder=3)
+
+    # Lens (Crystalline structure)
+    # Use Ellipse to stretch width independently of height (0.4 thin -> 1.2 thick)
+    from matplotlib.patches import Ellipse
+    lens = Ellipse((cx - radius + 0.8, cy), lens_thickness * 2, 0.7 * 2, color=get_color("Lens", colors["Lens"]), 
+                      fill=True, alpha=get_alpha("Lens", 0.5), zorder=4)
+    ax.add_patch(lens)
+    ax.add_patch(Ellipse((cx - radius + 0.8, cy), lens_thickness * 2, 0.7 * 2, color=get_color("Lens", colors["Lens"]), 
+                      fill=False, lw=2, alpha=get_alpha("Lens", 0.9), zorder=4))
+
+    # Iris (Colored part controlling pupil)
+    # Dilation controls the gap. Total height is 0.6. Pupil gap is `dilation` value (0.2 narrow -> 1.5 wide)
+    # We move the rectangles up/down based on dilation
+    gap = pupil_dilation / 2.0
+    iris_top = plt.Rectangle((cx - radius + 0.3, cy + gap), 0.15, 1.0 - gap, 
+                             color=get_color("Iris", colors["Iris"]), zorder=4, alpha=get_alpha("Iris", 0.9))
+    iris_bottom = plt.Rectangle((cx - radius + 0.3, cy - 1.0), 0.15, 1.0 - gap, 
+                                color=get_color("Iris", colors["Iris"]), zorder=4, alpha=get_alpha("Iris", 0.9))
+    ax.add_patch(iris_top)
+    ax.add_patch(iris_bottom)
+
+    # Draw incoming light beam
+    # Match the incoming beam exactly to the new pupil gap
+    beam_alpha = 0.3 if highlight_part != "None" else 0.6
+    ax.fill_between([0, cx - radius + 0.45], [cy + gap, cy + gap], [cy - gap, cy - gap], 
+                    color='#42f5ff', alpha=beam_alpha, zorder=1)
+    # Focused beam converges from lens edges to macula
+    ax.fill_between([cx - radius + 0.8, macula_x], [cy + 0.65, cy], [cy - 0.65, cy], 
+                    color='#42f5ff', alpha=beam_alpha - 0.1, zorder=1)
+
+
+    # Labels
+    if show_labels:
+        label_color = "#ffffff"
+        font_size = 9
+        
+        def add_label(x, y, text, target_x, target_y):
+            alpha = 1.0 if highlight_part == text or highlight_part == "None" else 0.3
+            color = "#00f3ff" if highlight_part == text else label_color
+            ax.text(x, y, text, color=color, fontsize=font_size, ha='center', va='center', alpha=alpha)
+            ax.plot([x + (0.2 if x < cx else -0.2), target_x], [y, target_y], 
+                    color='#ffffff', lw=0.5, alpha=alpha * 0.5, ls='--')
+
+        add_label(2.0, 7.5, "Cornea", cx - radius + 0.1, cy + 0.5)
+        add_label(2.5, 8.2, "Iris", cx - radius + 0.4, cy + 0.6)
+        add_label(3.5, 8.8, "Lens", cx - radius + 0.8, cy + 0.5)
+        add_label(6.5, 8.8, "Sclera", cx + 0.5, cy + radius)
+        add_label(7.5, 8.2, "Choroid", cx + 1.5, cy + radius - 0.2)
+        add_label(8.5, 7.5, "Retina", cx + 2.4, cy + radius - 1.2)
+        add_label(9.0, 5.0, "Macula", macula_x, macula_y)
+        add_label(9.0, 3.5, "Optic Nerve", nerve_x + 0.5, nerve_y1 - 0.1)
+
+    ax.set_aspect('equal')
+    ax.set_xlim(0, 10)
+    ax.set_ylim(1, 9)
+    ax.axis('off')
+    
+    return fig
 
 
 def render_human_eye_scene(person_x, object_x, light_intensity, wavelength_nm, zoom_level):
@@ -488,36 +639,18 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-category = st.sidebar.radio("🎯 Choose Track", ["1. Fundamentals", "2. Advanced Processing"])
 
-if category == "1. Fundamentals":
-    st.sidebar.markdown("<span style='font-size:0.78rem;opacity:0.9;color:var(--text-muted);'>Core concepts and intuition builders</span>", unsafe_allow_html=True)
-    module = st.sidebar.selectbox("🧩 Select Module", [
-        "1.1 Visual Perception", 
-        "1.2 EM Spectrum", 
-        "1.3 Acquisition", 
-        "1.4 Sampling & Quantization", 
-        "1.5 Pixel Connectivity", 
-        "1.6 Math Tools",
-        "1.7 Distance Measures",
-        "1.8 Connected Components",
-        "1.9 Image Statistics",
-        "1.10 3D Eye Vision Game Model"
-    ])
-else:
-    st.sidebar.markdown("<span style='font-size:0.78rem;opacity:0.9;color:var(--text-muted);'>Hands-on processing and filtering labs</span>", unsafe_allow_html=True)
-    module = st.sidebar.selectbox("⚙️ Select Module", [
-        "2.1 Frequency Domain", 
-        "2.2 Spatial Filtering", 
-        "2.3 Morphology"
-    ])
+# Navigation State
+if "active_module" not in st.session_state:
+    st.session_state.active_module = "1.1 Visual Perception"
 
-st.sidebar.divider()
+def nav_button(label, module_id):
+    is_active = st.session_state.active_module == module_id
+    if st.button(label, type="primary" if is_active else "secondary", use_container_width=True):
+        st.session_state.active_module = module_id
+        st.rerun()
 
-st.sidebar.divider()
-st.sidebar.caption("Tip: Start from Fundamentals before moving to Advanced modules.")
-
-# --- GLOBAL IMAGE OVERRIDE ---
+# --- GLOBAL IMAGE OVERRIDE (Moved Up) ---
 st.sidebar.markdown("### 🖼️ Global Signal Override")
 st.sidebar.caption("Upload an image here to override procedurally generated signals across all compatible modules.")
 global_upload = st.sidebar.file_uploader("Upload Image", type=["jpg", "png", "jpeg", "bmp", "tif"], label_visibility="collapsed")
@@ -528,13 +661,70 @@ if global_upload:
     global_img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
     if global_img is not None:
         st.sidebar.success("Global Signal Locked")
+        
+st.sidebar.divider()
+
+# --- TRACK SELECTION ---
+category = st.sidebar.radio("🎯 Choose Track", ["1. Fundamentals", "2. Advanced Processing"])
+st.sidebar.caption("Tip: Start from Fundamentals before moving to Advanced modules.")
+
+if category == "1. Fundamentals":
+    with st.sidebar.expander("📘 Chapter 1: Fundamentals of Image Formation", expanded=False):
+        nav_button("1.1 Visual Perception", "1.1 Visual Perception")
+        st.caption("• Human eye structure  \n• Image formation in retina  \n• Brightness adaptation & contrast  \n• Rods and cones")
+        st.write("")
+        nav_button("1.2 Electromagnetic (EM) Spectrum", "1.2 Electromagnetic (EM) Spectrum")
+        st.caption("• Visible light range (400nm-700nm)  \n• Infrared, X-rays, UV  \n• Image sensing across spectrum")
+        st.write("")
+        nav_button("1.3 Image Acquisition", "1.3 Image Acquisition")
+        st.caption("• Sensors (CCD, CMOS)  \n• Image capture process  \n• Analog to digital conversion  \n• Basic imaging system model")
+        
+    with st.sidebar.expander("📘 Chapter 2: Image Digitization", expanded=False):
+        nav_button("2.1 Sampling & Quantization", "2.1 Sampling & Quantization")
+        st.caption("• Continuous to digital conversion  \n• Spatial sampling  \n• Gray level quantization  \n• Resolution (spatial & intensity)")
+        st.write("")
+        nav_button("2.2 Pixel Connectivity", "2.2 Pixel Connectivity")
+        st.caption("• 4-connectivity  \n• 8-connectivity  \n• m-connectivity")
+        st.write("")
+        nav_button("2.3 Distance Measures", "2.3 Distance Measures")
+        st.caption("• Euclidean distance  \n• City block distance  \n• Chessboard distance")
+        
+    with st.sidebar.expander("📘 Chapter 3: Image Representation & Mathematical Tools", expanded=False):
+        nav_button("3.1 Mathematical Tools", "3.1 Mathematical Tools")
+        st.caption("• Set theory basics  \n• Matrix representation  \n• Logical operations  \n• Basic algebra used in DIP")
+        st.write("")
+        nav_button("3.2 Connected Components", "3.2 Connected Components")
+        st.caption("• Region labeling  \n• Object detection  \n• Component extraction")
+        st.write("")
+        nav_button("3.3 Image Statistics", "3.3 Image Statistics")
+        st.caption("• Mean  \n• Variance  \n• Histogram  \n• Probability density functions")
+        
+    with st.sidebar.expander("📘 Chapter 4: Advanced Vision Concepts", expanded=False):
+        nav_button("4.1 3D Eye Vision Game Model", "4.1 3D Eye Vision Game Model")
+        st.caption("• Stereo vision  \n• Depth perception  \n• Parallax  \n• 3D reconstruction basics  \n• Applications in AR/VR & gaming")
+
+else:
+    with st.sidebar.expander("📘 Chapter 5: Spatial Domain Processing", expanded=False):
+        nav_button("5.1 Spatial Filtering", "5.1 Spatial Filtering")
+        st.caption("**🔹 Concept:** Operations performed directly on pixels.  \n**🔹 Topics Included:** Image smoothing (Mean filter, Gaussian filter), Image sharpening (Laplacian, High-pass filter), Convolution & correlation, Mask/kernel operations  \n**🔹 Formula:** $g(x,y)=T[f(x,y)]$  \n**🔹 Used For:** Noise removal, Edge enhancement, Image improvement")
+        
+    with st.sidebar.expander("📘 Chapter 6: Frequency Domain Processing", expanded=False):
+        nav_button("6.1 Frequency Domain", "6.1 Frequency Domain")
+        st.caption("**🔹 Concept:** Processing image after converting it using Fourier Transform.  \n**🔹 Steps:** Apply DFT (Discrete Fourier Transform), Modify frequency components, Apply Inverse DFT  \n**🔹 Filters:** Low Pass Filter (Blur), High Pass Filter (Edge detection), Band Pass Filter  \n**🔹 Advantage:** Better for: Periodic noise removal, Global enhancement")
+        
+    with st.sidebar.expander("📘 Chapter 7: Morphological Image Processing", expanded=False):
+        nav_button("7.1 Morphology", "7.1 Morphology")
+        st.caption("**🔹 Concept:** Shape-based image processing (mainly binary images)  \n**🔹 Basic Operations:** Erosion, Dilation, Opening, Closing  \n**🔹 Uses:** Object boundary extraction, Removing small noise, Filling holes, Shape detection")
+
+# Set module alias for backend logic compatibility
+module = st.session_state.active_module
 
 # ==========================================
 # PART 1: FUNDAMENTALS (Logic from app (2).py)
 # ==========================================
 
 if module == "1.1 Visual Perception":
-    st.header("1. Elements of Visual Perception")
+    st.header("1.1 Elements of Visual Perception")
     st.write("Explore how the eye adapts to brightness (Scotopic vs Photopic) and visual illusions.")
 
     col1, col2 = st.columns([1, 2])
@@ -560,8 +750,8 @@ if module == "1.1 Visual Perception":
             img = generate_flower_scene(illum_lin, mach_bands)
         st.image(img, channels="BGR", caption="Simulated Scene", use_container_width=True)
 
-elif module == "1.2 EM Spectrum":
-    st.header("2. Light & The Electromagnetic Spectrum")
+elif module == "1.2 Electromagnetic (EM) Spectrum":
+    st.header("1.2 Light & The Electromagnetic Spectrum")
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col1:
@@ -604,8 +794,8 @@ elif module == "1.2 EM Spectrum":
 
 
     
-elif module == "1.3 Acquisition":
-    st.header("3. Image Sensing & Acquisition")
+elif module == "1.3 Image Acquisition":
+    st.header("1.3 Image Sensing & Acquisition")
     col1, col2, col3 = st.columns([1, 2, 1])
     
     # Store state so we can render across columns cleanly
@@ -678,16 +868,16 @@ elif module == "1.3 Acquisition":
             st.metric("Acquisition Speed", "Instant")
             st.metric("Mechanics", "Solid State (No Moving Parts)")
 
-elif module == "1.4 Sampling & Quantization":
+elif module == "2.1 Sampling & Quantization":
     sampling_quantization_extended.run(global_img)
 
 
-elif module == "1.5 Pixel Connectivity":
+elif module == "2.2 Pixel Connectivity":
     pixel_relationships.run(global_img)
 
 
-elif module == "1.6 Math Tools":
-    st.header("6. Mathematical Functions in Digital Image Processing")
+elif module == "3.1 Mathematical Tools":
+    st.header("3.1 Mathematical Functions in Digital Image Processing")
     st.caption("Analyze arithmetic, statistical, trigonometric, transform, morphology, and filtering functions with visual demos.")
 
     with st.expander("📘 Quick Analysis: Where each function is used in DIP", expanded=False):
@@ -863,46 +1053,94 @@ elif module == "1.6 Math Tools":
 
         display_images(base, filtered, ("Input Image", f"{filter_choice} Output"))
 
-elif module == "1.7 Distance Measures":
+elif module == "2.3 Distance Measures":
     distance_measures.run(global_img)
 
-elif module == "1.8 Connected Components":
+elif module == "3.2 Connected Components":
     connected_components.run(global_img)
 
-elif module == "1.9 Image Statistics":
+elif module == "3.3 Image Statistics":
     image_statistics.run(global_img)
 
 
 
-elif module == "1.10 3D Eye Vision Game Model":
-    st.header("10. Human Vision Game Model (Interactive)")
-    st.write("Move (drag via sliders) the human and thing positions, zoom into eye vision, and observe processed output image with distance/light-ray changes.")
+elif module == "4.1 3D Eye Vision Game Model":
+    st.header("4.1 Human Vision Game Model (Interactive)")
+    st.write("Explore the anatomical structure of the eye and simulate visual perception based on physics.")
 
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        person_x = st.slider("Drag Human Position", 0.8, 8.5, 5.0, 0.1)
-    with c2:
-        object_x = st.slider("Drag Thing Position", 0.5, 8.8, 2.0, 0.1)
-    with c3:
-        zoom_level = st.slider("Eye Zoom", 0.6, 2.5, 1.4, 0.1)
+    tab_anatomy, tab_physics = st.tabs(["👁️ Anatomical Cross-Section", "🌌 Vision Physics Engine"])
 
-    c4, c5 = st.columns(2)
-    with c4:
-        light_intensity = st.slider("Light Ray Intensity", 0.1, 1.0, 0.75, 0.05)
-    with c5:
-        wavelength_nm = st.slider("Wavelength (nm)", 420, 700, 550, 5)
+    with tab_anatomy:
+        st.subheader("Interactive Human Eye Anatomy")
+        ac1, ac2 = st.columns([1, 2])
+        
+        with ac1:
+            st.info("Biological Components")
+            show_labels = st.checkbox("Show Anatomical Labels", value=True)
+            highlight_part = st.selectbox(
+                "Isolate Structure", 
+                ["None", "Cornea", "Iris", "Lens", "Retina", "Macula", "Optic Nerve", "Sclera", "Choroid"]
+            )
+            
+            st.markdown("### Physiological Controls")
+            pupil_dilation = st.slider("Pupil Dilation (Iris Gap)", 0.2, 1.5, 0.7, 0.1, 
+                                      help="Simulates bright light (constricted) vs dark/sympathetic nervous system (dilated)")
+            lens_thickness = st.slider("Lens Thickness (Focus)", 0.4, 1.2, 0.7, 0.1,
+                                      help="Simulates accommodation: thin for far objects, thick for near objects")
+            cornea_bulge = st.slider("Cornea Bulge (Astigmatism)", 0.8, 1.6, 1.2, 0.1,
+                                    help="Alters the primary refractive surface of the eye")
+            
+        with ac2:
+            fig_anatomy = render_anatomical_eye_scene(highlight_part, show_labels, pupil_dilation, lens_thickness, cornea_bulge)
+            st.pyplot(fig_anatomy)
+            
+        st.markdown("---")
+        st.subheader("Simulated Retinal Vision")
+        st.markdown("Observe how the physical shape of the eye directly impacts the image formed on the retina. Distorting the lens or cornea creates **defocus** and **astigmatism**.")
+        
+        in_img, out_img = simulate_physiological_vision(global_img, pupil_dilation, lens_thickness, cornea_bulge)
+        
+        vc1, vc2 = st.columns(2)
+        with vc1:
+            st.image(in_img, caption="External Object (Input)", use_container_width=True, clamp=True)
+        with vc2:
+            st.image(out_img, caption="Retinal Projection (Output)", use_container_width=True, clamp=True)
 
-    scene_fig, distance_m = render_human_eye_scene(person_x, object_x, light_intensity, wavelength_nm, zoom_level)
-    st.pyplot(scene_fig)
+    with tab_physics:
+        st.subheader("Ray Tracing & Perception Simulator")
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            person_x = st.slider("Drag Human Position", 0.8, 8.5, 5.0, 0.1)
+        with c2:
+            object_x = st.slider("Drag Thing Position", 0.5, 8.8, 2.0, 0.1)
+        with c3:
+            zoom_level = st.slider("Eye Zoom", 0.6, 2.5, 1.4, 0.1)
 
-    perceived, processed = generate_processed_vision_image(distance_m, light_intensity, zoom_level, global_img)
-    display_images(perceived, processed, ("Perceived Image (retina-like)", "Processed Image (digital enhancement)"))
+        c4, c5 = st.columns(2)
+        with c4:
+            light_intensity = st.slider("Light Ray Intensity", 0.1, 1.0, 0.75, 0.05)
+        with c5:
+            wavelength_nm = st.slider("Wavelength (nm)", 420, 700, 550, 5)
 
-    st.metric("Distance Between Human and Thing", f"{distance_m:.2f} m")
-    st.markdown('''
-    **Input controls:** distance change (human vs thing position) and light ray intensity.  
-    **Output:** processed image of the thing after simulated vision + digital enhancement.
-    ''')
+        scene_fig, distance_m = render_human_eye_scene(person_x, object_x, light_intensity, wavelength_nm, zoom_level)
+        st.pyplot(scene_fig)
+
+        input_img, perceived, processed = generate_processed_vision_image(distance_m, light_intensity, zoom_level, global_img)
+        
+        st.markdown("### Vision Pipeline")
+        i1, i2, i3 = st.columns(3)
+        with i1:
+            st.image(input_img, caption="1. Input Image (Object)", use_container_width=True, clamp=True)
+        with i2:
+            st.image(perceived, caption="2. Perceived (Retina)", use_container_width=True, clamp=True)
+        with i3:
+            st.image(processed, caption="3. Processed (Brain/Digital)", use_container_width=True, clamp=True)
+
+        st.metric("Distance Between Human and Thing", f"{distance_m:.2f} m")
+        st.markdown('''
+        **Input controls:** distance change (human vs thing position) and light ray intensity.  
+        **Output:** processed image of the thing after simulated vision + digital enhancement.
+        ''')
 
 # ==========================================
 # PART 2: ADVANCED PROCESSING (Logic from app.py - Workbench)
@@ -918,8 +1156,8 @@ elif category == "2. Advanced Processing":
 
     if True:
         
-        if module == "2.1 Frequency Domain":
-            st.header("Frequency Domain Filtering")
+        if module == "6.1 Frequency Domain":
+            st.header("6.1 Frequency Domain Filtering")
             with st.expander("📘 Theory: Frequency Domain & FFT"):
                 st.write(r"""
                 **Concept**: Converts the image from spatial domain $(x,y)$ to frequency domain $(u,v)$.
@@ -969,8 +1207,8 @@ elif category == "2. Advanced Processing":
             st.subheader("Spatial Result")
             display_images(original_img, processed_img)
             
-        elif module == "2.2 Spatial Filtering":
-            st.header("Spatial Filtering")
+        elif module == "5.1 Spatial Filtering":
+            st.header("5.1 Spatial Filtering")
             with st.expander("📘 Theory: Spatial Convolution & Noise"):
                 st.write(r"""
                 **Convolution**:
@@ -1015,8 +1253,8 @@ elif category == "2. Advanced Processing":
                      
                 display_images(original_img, processed_img)
 
-        elif module == "2.3 Morphology":
-            st.header("Morphological Operations")
+        elif module == "7.1 Morphology":
+            st.header("7.1 Morphological Operations")
             with st.expander("📘 Theory: Morphology"):
                 st.write("""
                 **Operations based on shapes (Structuring Elements)**.
